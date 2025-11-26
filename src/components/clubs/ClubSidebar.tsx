@@ -60,8 +60,8 @@ export function ClubSidebar({ clubId }: ClubSidebarProps) {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url, item.exact)}>
-                    <NavLink to={item.url} end={item.exact}>
-                      <item.icon className={collapsed ? "mx-auto" : ""} />
+                    <NavLink to={item.url} end={item.exact} className="flex items-center gap-2">
+                      <item.icon className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>

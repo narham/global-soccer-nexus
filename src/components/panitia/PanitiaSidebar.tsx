@@ -54,7 +54,7 @@ export function PanitiaSidebar() {
                     <NavLink
                       to={item.url}
                       end={item.url === "/panitia"}
-                      className="hover:bg-muted/50"
+                      className="flex items-center gap-2 hover:bg-muted/50"
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <item.icon className="h-4 w-4" />
@@ -71,11 +71,11 @@ export function PanitiaSidebar() {
           <SidebarGroupContent>
             <Button
               variant="ghost"
-              className="w-full justify-start"
+              className="w-full justify-start gap-2"
               onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
-              {!collapsed && <span className="ml-2">Logout</span>}
+              {!collapsed && <span>Logout</span>}
             </Button>
           </SidebarGroupContent>
         </SidebarGroup>
