@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { generateMatchReportPDF, MatchReportData } from "@/lib/pdf-generator";
 
 interface MatchReportTabProps {
   match: any;
@@ -53,9 +54,98 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
       setLoading(false);
     }
   };
-  const handleDownloadReport = () => {
-    // Mock download - in production, generate PDF report
-    alert("Laporan pertandingan akan didownload dalam format PDF sesuai FIFA Match Report Template");
+  const handleDownloadReport = async () => {
+    if (!homeStats || !awayStats) {
+      toast({
+        variant: "destructive",
+        title: "Data tidak lengkap",
+        description: "Statistik pertandingan belum lengkap untuk generate PDF",
+      });
+      return;
+    }
+
+    try {
+      // Get lineups
+      const { data: lineups } = await supabase
+        .from('match_lineups')
+        .select('*, player:players(full_name), club:clubs(name)')
+        .eq('match_id', match.id)
+        .order('position_type');
+
+      const homeLineup = lineups
+        ?.filter(l => l.club_id === match.home_club_id)
+        .map(l => `${l.shirt_number}. ${(l.player as any)?.full_name} (${l.position})`)
+        .join('\n') || '';
+
+      const awayLineup = lineups
+        ?.filter(l => l.club_id === match.away_club_id)
+        .map(l => `${l.shirt_number}. ${(l.player as any)?.full_name} (${l.position})`)
+        .join('\n') || '';
+
+      // Prepare PDF data
+      const pdfData: MatchReportData = {
+        competition: match.competition?.name || 'Unknown Competition',
+        matchDate: format(new Date(match.match_date), "EEEE, d MMMM yyyy, HH:mm", { locale: id }) + ' WIB',
+        venue: match.venue || 'TBA',
+        attendance: match.attendance,
+        homeTeam: match.home_club?.name || 'Home Team',
+        awayTeam: match.away_club?.name || 'Away Team',
+        homeScore: match.home_score ?? 0,
+        awayScore: match.away_score ?? 0,
+        halfTimeHomeScore: match.half_time_home_score,
+        halfTimeAwayScore: match.half_time_away_score,
+        homeGoals: events
+          .filter(e => ["goal", "penalty_scored", "own_goal"].includes(e.event_type) && e.club_id === match.home_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        awayGoals: events
+          .filter(e => ["goal", "penalty_scored", "own_goal"].includes(e.event_type) && e.club_id === match.away_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        homeLineup,
+        awayLineup,
+        homeYellowCards: events
+          .filter(e => e.event_type === "yellow_card" && e.club_id === match.home_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        homeRedCards: events
+          .filter(e => ["red_card", "second_yellow"].includes(e.event_type) && e.club_id === match.home_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        awayYellowCards: events
+          .filter(e => e.event_type === "yellow_card" && e.club_id === match.away_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        awayRedCards: events
+          .filter(e => ["red_card", "second_yellow"].includes(e.event_type) && e.club_id === match.away_club_id)
+          .map(e => `${e.player?.full_name} (${e.minute}')`),
+        statistics: {
+          homePossession: homeStats.possession || 0,
+          awayPossession: awayStats.possession || 0,
+          homeShots: homeStats.shots || 0,
+          awayShots: awayStats.shots || 0,
+          homeShotsOnTarget: homeStats.shots_on_target || 0,
+          awayShotsOnTarget: awayStats.shots_on_target || 0,
+          homeCorners: homeStats.corners || 0,
+          awayCorners: awayStats.corners || 0,
+          homeFouls: homeStats.fouls || 0,
+          awayFouls: awayStats.fouls || 0,
+        },
+        referee: match.referee_name || 'TBA',
+        assistantReferee1: match.assistant_referee_1 || 'TBA',
+        assistantReferee2: match.assistant_referee_2 || 'TBA',
+        fourthOfficial: match.fourth_official,
+        varOfficial: match.var_official,
+      };
+
+      generateMatchReportPDF(pdfData);
+
+      toast({
+        title: "PDF Generated",
+        description: "Laporan pertandingan berhasil didownload",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal generate PDF",
+        description: error.message,
+      });
+    }
   };
 
   return (
