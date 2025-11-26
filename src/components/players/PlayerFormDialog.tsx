@@ -206,7 +206,49 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm">Biodata Utama</h3>
+              <h3 className="font-semibold text-sm">Identitas (Input Pertama)</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="nationality"
+                  render={({ field }) => (
+                    <FormItem className="col-span-2">
+                      <FormLabel>Kewarganegaraan *</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* NIK Input - PERTAMA & WAJIB untuk WNI */}
+              {form.watch("nationality") === "Indonesia" && (
+                <FormField
+                  control={form.control}
+                  name="nik"
+                  render={({ field }) => (
+                    <FormItem>
+                      <NIKInput
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        onValidationChange={(isValid, dateOfBirth) => {
+                          if (isValid && dateOfBirth) {
+                            form.setValue("date_of_birth", dateOfBirth.toISOString().split("T")[0]);
+                          }
+                        }}
+                        disabled={!!player}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-sm">Biodata Lengkap</h3>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -228,21 +270,16 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
                     <FormItem>
                       <FormLabel>Tanggal Lahir *</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input 
+                          type="date" 
+                          {...field} 
+                          disabled={form.watch("nationality") === "Indonesia" && !!form.watch("nik")}
+                          className={form.watch("nationality") === "Indonesia" && !!form.watch("nik") ? "bg-muted" : ""}
+                        />
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="nationality"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kewarganegaraan *</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
+                      {form.watch("nationality") === "Indonesia" && !!form.watch("nik") && (
+                        <p className="text-xs text-muted-foreground">Otomatis dari NIK</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -251,7 +288,7 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
                   control={form.control}
                   name="place_of_birth"
                   render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem>
                       <FormLabel>Tempat Lahir</FormLabel>
                       <FormControl>
                         <Input placeholder="Kota kelahiran" {...field} />
@@ -261,29 +298,6 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
                   )}
                 />
               </div>
-
-              {/* NIK Input - WAJIB untuk WNI */}
-              {form.watch("nationality") === "Indonesia" && (
-                <FormField
-                  control={form.control}
-                  name="nik"
-                  render={({ field }) => (
-                    <FormItem>
-                      <NIKInput
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onValidationChange={(isValid, dateOfBirth) => {
-                          if (isValid && dateOfBirth && !form.getValues("date_of_birth")) {
-                            form.setValue("date_of_birth", dateOfBirth.toISOString().split("T")[0]);
-                          }
-                        }}
-                        disabled={!!player}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
             </div>
 
             <div className="space-y-4">

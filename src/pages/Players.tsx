@@ -34,8 +34,6 @@ const Players = () => {
   const { isAdminKlub, clubId } = useUserRole();
 
   useEffect(() => {
-    fetchPlayers();
-    
     // Listen for transfer dialog trigger from PlayerFormDialog
     const handleOpenTransfer = (event: CustomEvent) => {
       setTransferData(event.detail);
@@ -47,6 +45,14 @@ const Players = () => {
       window.removeEventListener('openTransferDialog', handleOpenTransfer as EventListener);
     };
   }, []);
+
+  useEffect(() => {
+    // Only fetch players when role is determined and clubId is available for Admin Klub
+    if (isAdminKlub && !clubId) {
+      return; // Wait for clubId to be available
+    }
+    fetchPlayers();
+  }, [isAdminKlub, clubId]);
 
   const fetchPlayers = async () => {
     try {
