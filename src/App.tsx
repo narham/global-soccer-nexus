@@ -36,6 +36,8 @@ import PanitiaCompetitionDetailPage from "./pages/panitia/PanitiaCompetitionDeta
 import PanitiaMatchesPage from "./pages/panitia/PanitiaMatchesPage";
 import PanitiaMatchDetailPage from "./pages/panitia/PanitiaMatchDetailPage";
 import PublicPage from "./pages/PublicPage";
+import PublicClubDetailPage from "./components/public/PublicClubDetailPage";
+import PublicPlayerDetailPage from "./components/public/PublicPlayerDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +50,8 @@ const App = () => (
         <Routes>
           {/* Public Routes - No Auth Required */}
           <Route path="/public" element={<PublicPage />} />
+          <Route path="/public/clubs/:id" element={<PublicClubDetailPage />} />
+          <Route path="/public/players/:id" element={<PublicPlayerDetailPage />} />
           
           {/* Auth Routes */}
           <Route path="/auth" element={<Auth />} />

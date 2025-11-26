@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -49,8 +49,7 @@ export const PublicPlayersTab = () => {
         .from("player_statistics")
         .select(`
           *,
-          player:players(id, full_name, photo_url, position, current_club:clubs(name, logo_url)),
-          competition:competitions(name, season)
+          player:players(id, full_name, photo_url, position, current_club:clubs(name, logo_url))
         `)
         .order("goals", { ascending: false })
         .limit(50);
@@ -144,9 +143,10 @@ export const PublicPlayersTab = () => {
             ) : (
               <div className="space-y-2">
                 {topScorers.map((stat, index) => (
-                  <div
+                  <Link
                     key={stat.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    to={`/public/players/${stat.player.id}`}
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-center w-8 h-8">
                       <Badge variant={index < 3 ? "default" : "outline"}>
@@ -170,7 +170,7 @@ export const PublicPlayersTab = () => {
                       <p className="text-2xl font-bold text-primary">{stat.goals}</p>
                       <p className="text-xs text-muted-foreground">gol</p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -199,9 +199,10 @@ export const PublicPlayersTab = () => {
             ) : (
               <div className="space-y-2">
                 {topAssisters.map((stat, index) => (
-                  <div
+                  <Link
                     key={stat.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                    to={`/public/players/${stat.player.id}`}
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center justify-center w-8 h-8">
                       <Badge variant={index < 3 ? "default" : "outline"}>
@@ -225,7 +226,7 @@ export const PublicPlayersTab = () => {
                       <p className="text-2xl font-bold text-primary">{stat.assists}</p>
                       <p className="text-xs text-muted-foreground">assist</p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
