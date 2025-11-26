@@ -55,16 +55,14 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
     }
   };
   const handleDownloadReport = async () => {
-    if (!homeStats || !awayStats) {
-      toast({
-        variant: "destructive",
-        title: "Data tidak lengkap",
-        description: "Statistik pertandingan belum lengkap untuk generate PDF",
-      });
-      return;
-    }
-
     try {
+      // Show warning if statistics are incomplete
+      if (!homeStats || !awayStats) {
+        toast({
+          title: "PDF dengan data terbatas",
+          description: "Statistik pertandingan belum lengkap. PDF akan di-generate dengan data yang tersedia.",
+        });
+      }
       // Get lineups
       const { data: lineups } = await supabase
         .from('match_lineups')
@@ -115,16 +113,16 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
           .filter(e => ["red_card", "second_yellow"].includes(e.event_type) && e.club_id === match.away_club_id)
           .map(e => `${e.player?.full_name} (${e.minute}')`),
         statistics: {
-          homePossession: homeStats.possession || 0,
-          awayPossession: awayStats.possession || 0,
-          homeShots: homeStats.shots || 0,
-          awayShots: awayStats.shots || 0,
-          homeShotsOnTarget: homeStats.shots_on_target || 0,
-          awayShotsOnTarget: awayStats.shots_on_target || 0,
-          homeCorners: homeStats.corners || 0,
-          awayCorners: awayStats.corners || 0,
-          homeFouls: homeStats.fouls || 0,
-          awayFouls: awayStats.fouls || 0,
+          homePossession: homeStats?.possession || 0,
+          awayPossession: awayStats?.possession || 0,
+          homeShots: homeStats?.shots || 0,
+          awayShots: awayStats?.shots || 0,
+          homeShotsOnTarget: homeStats?.shots_on_target || 0,
+          awayShotsOnTarget: awayStats?.shots_on_target || 0,
+          homeCorners: homeStats?.corners || 0,
+          awayCorners: awayStats?.corners || 0,
+          homeFouls: homeStats?.fouls || 0,
+          awayFouls: awayStats?.fouls || 0,
         },
         referee: match.referee_name || 'TBA',
         assistantReferee1: match.assistant_referee_1 || 'TBA',

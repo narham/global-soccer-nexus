@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { QuickAccessBar } from "@/components/navigation/QuickAccessBar";
 
 export default function PanitiaDashboard() {
   const [loading, setLoading] = useState(true);
@@ -97,6 +98,8 @@ export default function PanitiaDashboard() {
         <h1 className="text-3xl font-bold">Dashboard Panitia</h1>
         <p className="text-muted-foreground">Kelola kompetisi dan pertandingan Anda</p>
       </div>
+
+      <QuickAccessBar />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
