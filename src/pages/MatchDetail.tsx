@@ -161,7 +161,7 @@ const MatchDetail = () => {
         </TabsContent>
 
         <TabsContent value="stats">
-          <MatchStatsTab matchId={match.id} />
+          <MatchStatsTab matchId={match.id} homeClub={match.home_club} awayClub={match.away_club} />
         </TabsContent>
 
         <TabsContent value="report">

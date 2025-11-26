@@ -262,10 +262,14 @@ export type Database = {
           created_at: string
           description: string | null
           event_type: string
+          goal_type: string | null
           id: string
           match_id: string
           minute: number
           player_id: string | null
+          player_out_id: string | null
+          red_card_reason: string | null
+          var_decision_type: string | null
         }
         Insert: {
           card_type?: Database["public"]["Enums"]["card_type"] | null
@@ -273,10 +277,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           event_type: string
+          goal_type?: string | null
           id?: string
           match_id: string
           minute: number
           player_id?: string | null
+          player_out_id?: string | null
+          red_card_reason?: string | null
+          var_decision_type?: string | null
         }
         Update: {
           card_type?: Database["public"]["Enums"]["card_type"] | null
@@ -284,10 +292,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           event_type?: string
+          goal_type?: string | null
           id?: string
           match_id?: string
           minute?: number
           player_id?: string | null
+          player_out_id?: string | null
+          red_card_reason?: string | null
+          var_decision_type?: string | null
         }
         Relationships: [
           {
@@ -311,62 +323,244 @@ export type Database = {
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "match_events_player_out_id_fkey"
+            columns: ["player_out_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_lineups: {
+        Row: {
+          club_id: string
+          created_at: string
+          formation_position: number | null
+          id: string
+          match_id: string
+          minutes_played: number | null
+          player_id: string
+          position: string
+          position_type: string
+          rating: number | null
+          shirt_number: number
+          updated_at: string
+        }
+        Insert: {
+          club_id: string
+          created_at?: string
+          formation_position?: number | null
+          id?: string
+          match_id: string
+          minutes_played?: number | null
+          player_id: string
+          position: string
+          position_type: string
+          rating?: number | null
+          shirt_number: number
+          updated_at?: string
+        }
+        Update: {
+          club_id?: string
+          created_at?: string
+          formation_position?: number | null
+          id?: string
+          match_id?: string
+          minutes_played?: number | null
+          player_id?: string
+          position?: string
+          position_type?: string
+          rating?: number | null
+          shirt_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_lineups_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_lineups_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_lineups_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_statistics: {
+        Row: {
+          clearances: number | null
+          club_id: string
+          corners: number | null
+          created_at: string
+          crosses: number | null
+          duels_won: number | null
+          fouls: number | null
+          id: string
+          interceptions: number | null
+          match_id: string
+          offsides: number | null
+          pass_accuracy: number | null
+          passes: number | null
+          possession: number | null
+          saves: number | null
+          shots: number | null
+          shots_on_target: number | null
+          tackles: number | null
+          updated_at: string
+        }
+        Insert: {
+          clearances?: number | null
+          club_id: string
+          corners?: number | null
+          created_at?: string
+          crosses?: number | null
+          duels_won?: number | null
+          fouls?: number | null
+          id?: string
+          interceptions?: number | null
+          match_id: string
+          offsides?: number | null
+          pass_accuracy?: number | null
+          passes?: number | null
+          possession?: number | null
+          saves?: number | null
+          shots?: number | null
+          shots_on_target?: number | null
+          tackles?: number | null
+          updated_at?: string
+        }
+        Update: {
+          clearances?: number | null
+          club_id?: string
+          corners?: number | null
+          created_at?: string
+          crosses?: number | null
+          duels_won?: number | null
+          fouls?: number | null
+          id?: string
+          interceptions?: number | null
+          match_id?: string
+          offsides?: number | null
+          pass_accuracy?: number | null
+          passes?: number | null
+          possession?: number | null
+          saves?: number | null
+          shots?: number | null
+          shots_on_target?: number | null
+          tackles?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_statistics_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_statistics_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
         ]
       }
       matches: {
         Row: {
+          assistant_referee_1: string | null
+          assistant_referee_2: string | null
           attendance: number | null
           away_club_id: string
           away_score: number | null
           competition_id: string
           created_at: string
+          fourth_official: string | null
           group_name: string | null
+          half_time_away_score: number | null
+          half_time_home_score: number | null
           home_club_id: string
           home_score: number | null
           id: string
           match_date: string
+          match_notes: string | null
           matchday: number | null
+          pitch_condition: string | null
           referee_name: string | null
           round: string | null
           status: Database["public"]["Enums"]["match_status"] | null
           updated_at: string
+          var_official: string | null
           venue: string | null
+          weather_condition: string | null
         }
         Insert: {
+          assistant_referee_1?: string | null
+          assistant_referee_2?: string | null
           attendance?: number | null
           away_club_id: string
           away_score?: number | null
           competition_id: string
           created_at?: string
+          fourth_official?: string | null
           group_name?: string | null
+          half_time_away_score?: number | null
+          half_time_home_score?: number | null
           home_club_id: string
           home_score?: number | null
           id?: string
           match_date: string
+          match_notes?: string | null
           matchday?: number | null
+          pitch_condition?: string | null
           referee_name?: string | null
           round?: string | null
           status?: Database["public"]["Enums"]["match_status"] | null
           updated_at?: string
+          var_official?: string | null
           venue?: string | null
+          weather_condition?: string | null
         }
         Update: {
+          assistant_referee_1?: string | null
+          assistant_referee_2?: string | null
           attendance?: number | null
           away_club_id?: string
           away_score?: number | null
           competition_id?: string
           created_at?: string
+          fourth_official?: string | null
           group_name?: string | null
+          half_time_away_score?: number | null
+          half_time_home_score?: number | null
           home_club_id?: string
           home_score?: number | null
           id?: string
           match_date?: string
+          match_notes?: string | null
           matchday?: number | null
+          pitch_condition?: string | null
           referee_name?: string | null
           round?: string | null
           status?: Database["public"]["Enums"]["match_status"] | null
           updated_at?: string
+          var_official?: string | null
           venue?: string | null
+          weather_condition?: string | null
         }
         Relationships: [
           {
