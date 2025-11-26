@@ -5,6 +5,7 @@ import { Trophy, Users, Shield, Calendar } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleRequestForm } from "@/components/users/RoleRequestForm";
 import { Skeleton } from "@/components/ui/skeleton";
+import { QuickAccessBar } from "@/components/navigation/QuickAccessBar";
 
 interface Stats {
   clubs: number;
@@ -125,6 +126,8 @@ const Index = () => {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">Selamat datang di sistem manajemen sepakbola profesional</p>
       </div>
+
+      <QuickAccessBar />
 
       {loading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
