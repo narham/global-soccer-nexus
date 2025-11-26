@@ -16,6 +16,8 @@ import ClubStaffPage from "./pages/ClubStaffPage";
 import ClubMatchesPage from "./pages/ClubMatchesPage";
 import ClubDocumentsPage from "./pages/ClubDocumentsPage";
 import ClubMatchDetailPage from "./pages/ClubMatchDetailPage";
+import ClubCompetitionsPage from "./pages/ClubCompetitionsPage";
+import ClubCompetitionPlayersPage from "./pages/ClubCompetitionPlayersPage";
 import Players from "./pages/Players";
 import PlayerDetail from "./pages/PlayerDetail";
 import Competitions from "./pages/Competitions";
@@ -45,6 +47,8 @@ const App = () => (
             <Route path="info" element={<ClubInfoPage />} />
             <Route path="players" element={<ClubPlayersPage />} />
             <Route path="staff" element={<ClubStaffPage />} />
+            <Route path="competitions" element={<ClubCompetitionsPage />} />
+            <Route path="competitions/:compId/players" element={<ClubCompetitionPlayersPage />} />
             <Route path="matches" element={<ClubMatchesPage />} />
             <Route path="matches/:matchId" element={<ClubMatchDetailPage />} />
             <Route path="documents" element={<ClubDocumentsPage />} />

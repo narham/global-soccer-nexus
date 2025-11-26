@@ -11,6 +11,7 @@ import { CompetitionInfoTab } from "@/components/competitions/CompetitionInfoTab
 import { CompetitionTeamsTab } from "@/components/competitions/CompetitionTeamsTab";
 import { CompetitionMatchesTab } from "@/components/competitions/CompetitionMatchesTab";
 import { CompetitionStandingsTab } from "@/components/competitions/CompetitionStandingsTab";
+import CompetitionPlayerValidationTab from "@/components/competitions/CompetitionPlayerValidationTab";
 import { CompetitionFormDialog } from "@/components/competitions/CompetitionFormDialog";
 
 const CompetitionDetail = () => {
@@ -76,11 +77,12 @@ const CompetitionDetail = () => {
       <CompetitionHeader competition={competition} />
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="info">📋 Info</TabsTrigger>
           <TabsTrigger value="teams">👥 Peserta</TabsTrigger>
           <TabsTrigger value="matches">⚽ Jadwal</TabsTrigger>
           <TabsTrigger value="standings">📊 Klasemen</TabsTrigger>
+          <TabsTrigger value="players">✅ Validasi Pemain</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -97,6 +99,10 @@ const CompetitionDetail = () => {
 
         <TabsContent value="standings">
           <CompetitionStandingsTab competitionId={competition.id} format={competition.format} />
+        </TabsContent>
+
+        <TabsContent value="players">
+          <CompetitionPlayerValidationTab competitionId={competition.id} />
         </TabsContent>
       </Tabs>
 

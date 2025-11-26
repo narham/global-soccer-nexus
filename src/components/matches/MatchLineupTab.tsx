@@ -3,11 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Edit, Trash2, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Users, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LineupFormDialog } from "./LineupFormDialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface MatchLineupTabProps {
   matchId: string;
@@ -16,6 +17,7 @@ interface MatchLineupTabProps {
 }
 
 export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabProps) => {
+  const { clubId: userClubId } = useUserRole();
   const [homeLineup, setHomeLineup] = useState<any[]>([]);
   const [awayLineup, setAwayLineup] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,6 +109,7 @@ export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabPr
   const renderLineupTable = (lineup: any[], club: any) => {
     const starting = lineup.filter((l) => l.position_type === "starting");
     const bench = lineup.filter((l) => l.position_type === "bench");
+    const isOwnTeam = userClubId === club.id;
 
     return (
       <Card>
@@ -114,11 +117,19 @@ export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabPr
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
             {club.name}
+            {!isOwnTeam && (
+              <Badge variant="outline" className="flex items-center gap-1 ml-2">
+                <Eye className="h-3 w-3" />
+                Hanya Lihat
+              </Badge>
+            )}
           </CardTitle>
-          <Button size="sm" onClick={() => handleAddLineup(club)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Pemain
-          </Button>
+          {isOwnTeam && (
+            <Button size="sm" onClick={() => handleAddLineup(club)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Pemain
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -148,20 +159,24 @@ export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabPr
                       <TableCell>{l.rating ? l.rating.toFixed(1) : "-"}</TableCell>
                       <TableCell>{l.minutes_played || 0}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEditLineup(l, club)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteLineup(l.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isOwnTeam && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditLineup(l, club)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteLineup(l.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -199,20 +214,24 @@ export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabPr
                       <TableCell>{l.rating ? l.rating.toFixed(1) : "-"}</TableCell>
                       <TableCell>{l.minutes_played || 0}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEditLineup(l, club)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteLineup(l.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isOwnTeam && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEditLineup(l, club)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDeleteLineup(l.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

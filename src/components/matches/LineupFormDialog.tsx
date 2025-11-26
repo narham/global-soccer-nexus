@@ -45,8 +45,10 @@ export const LineupFormDialog = ({ open, onOpenChange, matchId, clubId, clubName
   });
 
   useEffect(() => {
-    fetchPlayers();
-  }, [clubId]);
+    if (clubId && matchId) {
+      fetchPlayers();
+    }
+  }, [clubId, matchId]);
 
   useEffect(() => {
     if (lineup) {
@@ -61,13 +63,46 @@ export const LineupFormDialog = ({ open, onOpenChange, matchId, clubId, clubName
   }, [lineup]);
 
   const fetchPlayers = async () => {
-    const { data } = await supabase
-      .from("players")
-      .select("id, full_name, shirt_number, position")
-      .eq("current_club_id", clubId)
-      .eq("registration_status", "approved")
-      .order("shirt_number");
-    setPlayers(data || []);
+    try {
+      // Fetch match to get competition_id
+      const { data: matchData, error: matchError } = await supabase
+        .from("matches")
+        .select("competition_id")
+        .eq("id", matchId)
+        .single();
+
+      if (matchError) throw matchError;
+
+      // Fetch only approved players registered for this competition
+      const { data, error } = await supabase
+        .from("competition_player_registrations")
+        .select(`
+          shirt_number,
+          player:players(id, full_name, position)
+        `)
+        .eq("competition_id", matchData.competition_id)
+        .eq("club_id", clubId)
+        .eq("status", "approved");
+
+      if (error) throw error;
+
+      // Transform data to include player info
+      const playerList = data?.map((reg: any) => ({
+        id: reg.player.id,
+        full_name: reg.player.full_name,
+        position: reg.player.position,
+        shirt_number: reg.shirt_number
+      })) || [];
+
+      setPlayers(playerList);
+    } catch (error: any) {
+      console.error("Error fetching players:", error);
+      toast({ 
+        variant: "destructive",
+        title: "Gagal memuat data pemain terdaftar",
+        description: error.message 
+      });
+    }
   };
 
   const onSubmit = async (data: LineupFormData) => {
