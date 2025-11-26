@@ -138,8 +138,8 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink to={item.url} end className="flex items-center justify-between w-full">
-                        <div className="flex items-center">
-                          <item.icon className={collapsed ? "mx-auto" : ""} />
+                        <div className="flex items-center gap-2">
+                          <item.icon className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
                           {!collapsed && <span>{item.title}</span>}
                         </div>
                         {!collapsed && <NotificationBadge count={notifCount} />}
@@ -162,8 +162,8 @@ export function AppSidebar() {
                 {adminMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <NavLink to={item.url} end>
-                        <item.icon className={collapsed ? "mx-auto" : ""} />
+                      <NavLink to={item.url} end className="flex items-center gap-2">
+                        <item.icon className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
                         {!collapsed && <span>{item.title}</span>}
                       </NavLink>
                     </SidebarMenuButton>
@@ -178,9 +178,9 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           onClick={handleLogout}
-          className={`w-full justify-start ${collapsed ? "px-2" : ""}`}
+          className={`w-full justify-start gap-2 ${collapsed ? "px-2" : ""}`}
         >
-          <LogOut className={collapsed ? "mx-auto" : "mr-2"} />
+          <LogOut className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
           {!collapsed && "Keluar"}
         </Button>
       </SidebarFooter>
