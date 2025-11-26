@@ -1,7 +1,13 @@
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon, ShirtIcon } from "lucide-react";
+import { Plus, Edit, Trash2, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { LineupFormDialog } from "./LineupFormDialog";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface MatchLineupTabProps {
   matchId: string;
@@ -10,171 +16,245 @@ interface MatchLineupTabProps {
 }
 
 export const MatchLineupTab = ({ matchId, homeClub, awayClub }: MatchLineupTabProps) => {
-  // Mock lineup data - in production, fetch from database
-  const homeLineup = {
-    formation: "4-3-3",
-    starting: [
-      { position: "GK", number: 1, name: "Nadeo Argawinata", rating: 7.2 },
-      { position: "RB", number: 2, name: "Kevin Diks", rating: 7.5 },
-      { position: "CB", number: 4, name: "Muhammad Ferarri", rating: 7.8 },
-      { position: "CB", number: 5, name: "Rizky Ridho", rating: 7.4 },
-      { position: "LB", number: 3, name: "Player 4", rating: 7.0 },
-      { position: "CM", number: 6, name: "Rachmat Irianto", rating: 8.0 },
-      { position: "CM", number: 8, name: "Marc Klok", rating: 8.2 },
-      { position: "CM", number: 10, name: "Beckham Putra", rating: 7.6 },
-      { position: "RW", number: 7, name: "Witan Sulaeman", rating: 7.8 },
-      { position: "ST", number: 9, name: "Ciro Alves", rating: 8.5 },
-      { position: "LW", number: 11, name: "Ricky Kambuaya", rating: 8.1 },
-    ],
-    bench: [
-      { number: 12, name: "Reserve GK", position: "GK" },
-      { number: 13, name: "Reserve DF", position: "DF" },
-      { number: 14, name: "Reserve MF", position: "MF" },
-      { number: 15, name: "Reserve FW", position: "FW" },
-    ],
+  const [homeLineup, setHomeLineup] = useState<any[]>([]);
+  const [awayLineup, setAwayLineup] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedClub, setSelectedClub] = useState<any>(null);
+  const [selectedLineup, setSelectedLineup] = useState<any>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchLineups();
+
+    const channel = supabase
+      .channel('lineup-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'match_lineups',
+          filter: `match_id=eq.${matchId}`
+        },
+        () => {
+          fetchLineups();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [matchId]);
+
+  const fetchLineups = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("match_lineups")
+        .select(`
+          *,
+          player:players(full_name, position, shirt_number)
+        `)
+        .eq("match_id", matchId)
+        .order("position_type", { ascending: false })
+        .order("formation_position", { ascending: true });
+
+      if (error) throw error;
+
+      setHomeLineup(data?.filter((l) => l.club_id === homeClub.id) || []);
+      setAwayLineup(data?.filter((l) => l.club_id === awayClub.id) || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal memuat lineup",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const awayLineup = {
-    formation: "4-4-2",
-    starting: [
-      { position: "GK", number: 1, name: "Away GK", rating: 7.0 },
-      { position: "RB", number: 2, name: "Away RB", rating: 6.8 },
-      { position: "CB", number: 4, name: "Away CB1", rating: 7.2 },
-      { position: "CB", number: 5, name: "Away CB2", rating: 7.1 },
-      { position: "LB", number: 3, name: "Away LB", rating: 6.9 },
-      { position: "RM", number: 7, name: "Away RM", rating: 7.3 },
-      { position: "CM", number: 6, name: "Away CM1", rating: 7.4 },
-      { position: "CM", number: 8, name: "Away CM2", rating: 7.2 },
-      { position: "LM", number: 11, name: "Away LM", rating: 7.1 },
-      { position: "ST", number: 9, name: "Away ST1", rating: 7.5 },
-      { position: "ST", number: 10, name: "Away ST2", rating: 7.6 },
-    ],
-    bench: [
-      { number: 12, name: "Away Reserve GK", position: "GK" },
-      { number: 13, name: "Away Reserve DF", position: "DF" },
-      { number: 14, name: "Away Reserve MF", position: "MF" },
-      { number: 15, name: "Away Reserve FW", position: "FW" },
-    ],
+  const handleAddLineup = (club: any) => {
+    setSelectedClub(club);
+    setSelectedLineup(null);
+    setDialogOpen(true);
   };
 
-  const renderFormation = (lineup: any, isHome: boolean) => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">{isHome ? homeClub.name : awayClub.name}</h3>
-        <Badge variant="outline">{lineup.formation}</Badge>
-      </div>
+  const handleEditLineup = (lineup: any, club: any) => {
+    setSelectedClub(club);
+    setSelectedLineup(lineup);
+    setDialogOpen(true);
+  };
 
-      {/* Starting XI */}
-      <div className="bg-gradient-to-b from-green-500/10 to-green-700/10 rounded-lg p-6 min-h-[400px] relative border-2 border-green-500/20">
-        <div className="absolute inset-0 bg-[url('/field-lines.svg')] bg-center bg-no-repeat opacity-20" />
-        
-        <div className="relative space-y-6">
-          {/* Forward line */}
-          <div className="flex justify-center gap-8">
-            {lineup.starting.filter((p: any) => ["ST", "CF", "RW", "LW"].includes(p.position)).map((player: any) => (
-              <div key={player.number} className="flex flex-col items-center">
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold shadow-lg"
-                  style={{ backgroundColor: isHome ? homeClub.home_color : awayClub.away_color }}
-                >
-                  {player.number}
-                </div>
-                <p className="text-xs font-medium mt-1 text-center max-w-[80px]">{player.name}</p>
-                <Badge variant="secondary" className="mt-1 text-xs">{player.rating}</Badge>
-              </div>
-            ))}
+  const handleDeleteLineup = async (lineupId: string) => {
+    if (!confirm("Yakin ingin menghapus pemain dari lineup?")) return;
+
+    try {
+      const { error } = await supabase.from("match_lineups").delete().eq("id", lineupId);
+      if (error) throw error;
+      toast({ title: "Pemain berhasil dihapus dari lineup" });
+      fetchLineups();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal menghapus lineup",
+        description: error.message,
+      });
+    }
+  };
+
+  const renderLineupTable = (lineup: any[], club: any) => {
+    const starting = lineup.filter((l) => l.position_type === "starting");
+    const bench = lineup.filter((l) => l.position_type === "bench");
+
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            {club.name}
+          </CardTitle>
+          <Button size="sm" onClick={() => handleAddLineup(club)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Tambah Pemain
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              Starting XI <Badge variant="secondary">{starting.length}/11</Badge>
+            </h3>
+            {starting.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No.</TableHead>
+                    <TableHead>Pemain</TableHead>
+                    <TableHead>Posisi</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Menit</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {starting.map((l) => (
+                    <TableRow key={l.id}>
+                      <TableCell>{l.shirt_number}</TableCell>
+                      <TableCell className="font-medium">{l.player?.full_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{l.position}</Badge>
+                      </TableCell>
+                      <TableCell>{l.rating ? l.rating.toFixed(1) : "-"}</TableCell>
+                      <TableCell>{l.minutes_played || 0}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditLineup(l, club)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteLineup(l.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-sm">Belum ada starting XI</p>
+            )}
           </div>
 
-          {/* Midfield */}
-          <div className="flex justify-center gap-6">
-            {lineup.starting.filter((p: any) => ["CM", "RM", "LM", "CAM", "CDM"].includes(p.position)).map((player: any) => (
-              <div key={player.number} className="flex flex-col items-center">
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold shadow-lg"
-                  style={{ backgroundColor: isHome ? homeClub.home_color : awayClub.away_color }}
-                >
-                  {player.number}
-                </div>
-                <p className="text-xs font-medium mt-1 text-center max-w-[80px]">{player.name}</p>
-                <Badge variant="secondary" className="mt-1 text-xs">{player.rating}</Badge>
-              </div>
-            ))}
+          <div>
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              Cadangan <Badge variant="secondary">{bench.length}</Badge>
+            </h3>
+            {bench.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No.</TableHead>
+                    <TableHead>Pemain</TableHead>
+                    <TableHead>Posisi</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Menit</TableHead>
+                    <TableHead className="text-right">Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {bench.map((l) => (
+                    <TableRow key={l.id}>
+                      <TableCell>{l.shirt_number}</TableCell>
+                      <TableCell className="font-medium">{l.player?.full_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{l.position}</Badge>
+                      </TableCell>
+                      <TableCell>{l.rating ? l.rating.toFixed(1) : "-"}</TableCell>
+                      <TableCell>{l.minutes_played || 0}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditLineup(l, club)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteLineup(l.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="text-muted-foreground text-sm">Belum ada pemain cadangan</p>
+            )}
           </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
-          {/* Defense */}
-          <div className="flex justify-center gap-4">
-            {lineup.starting.filter((p: any) => ["RB", "CB", "LB", "RWB", "LWB"].includes(p.position)).map((player: any) => (
-              <div key={player.number} className="flex flex-col items-center">
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold shadow-lg"
-                  style={{ backgroundColor: isHome ? homeClub.home_color : awayClub.away_color }}
-                >
-                  {player.number}
-                </div>
-                <p className="text-xs font-medium mt-1 text-center max-w-[80px]">{player.name}</p>
-                <Badge variant="secondary" className="mt-1 text-xs">{player.rating}</Badge>
-              </div>
-            ))}
-          </div>
-
-          {/* Goalkeeper */}
-          <div className="flex justify-center">
-            {lineup.starting.filter((p: any) => p.position === "GK").map((player: any) => (
-              <div key={player.number} className="flex flex-col items-center">
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold shadow-lg"
-                  style={{ backgroundColor: isHome ? homeClub.home_color : awayClub.away_color }}
-                >
-                  {player.number}
-                </div>
-                <p className="text-xs font-medium mt-1 text-center max-w-[80px]">{player.name}</p>
-                <Badge variant="secondary" className="mt-1 text-xs">{player.rating}</Badge>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Bench */}
-      <div className="mt-4">
-        <h4 className="font-semibold mb-2 flex items-center gap-2">
-          <ShirtIcon className="h-4 w-4" />
-          Pemain Cadangan
-        </h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {lineup.bench.map((player: any) => (
-            <div key={player.number} className="flex items-center gap-2 p-2 rounded-lg bg-muted">
-              <Badge variant="outline">{player.number}</Badge>
-              <div>
-                <p className="text-sm font-medium">{player.name}</p>
-                <p className="text-xs text-muted-foreground">{player.position}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <Alert>
-        <InfoIcon className="h-4 w-4" />
         <AlertDescription>
-          Line-up sesuai FIFA Match Protocol. Starting XI maksimal, 7 pemain cadangan (termasuk 3 GK untuk kompetisi AFC).
-          Rating pemain berdasarkan performa dalam pertandingan ini.
+          Kelola lineup starting XI dan cadangan untuk kedua tim. Rating pemain dan menit bermain dapat diinput setelah pertandingan.
         </AlertDescription>
       </Alert>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          {renderFormation(homeLineup, true)}
-        </Card>
-
-        <Card className="p-6">
-          {renderFormation(awayLineup, false)}
-        </Card>
+        {renderLineupTable(homeLineup, homeClub)}
+        {renderLineupTable(awayLineup, awayClub)}
       </div>
+
+      {selectedClub && (
+        <LineupFormDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          matchId={matchId}
+          clubId={selectedClub.id}
+          clubName={selectedClub.name}
+          lineup={selectedLineup}
+          onSuccess={fetchLineups}
+        />
+      )}
     </div>
   );
 };
