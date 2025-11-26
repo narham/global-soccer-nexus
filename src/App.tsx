@@ -4,10 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { ClubLayout } from "./components/clubs/ClubLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Clubs from "./pages/Clubs";
 import ClubDetail from "./pages/ClubDetail";
+import ClubDashboard from "./pages/ClubDashboard";
+import ClubInfoPage from "./pages/ClubInfoPage";
+import ClubPlayersPage from "./pages/ClubPlayersPage";
+import ClubStaffPage from "./pages/ClubStaffPage";
+import ClubMatchesPage from "./pages/ClubMatchesPage";
+import ClubDocumentsPage from "./pages/ClubDocumentsPage";
+import ClubMatchDetailPage from "./pages/ClubMatchDetailPage";
 import Players from "./pages/Players";
 import PlayerDetail from "./pages/PlayerDetail";
 import Competitions from "./pages/Competitions";
@@ -32,7 +40,15 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Layout><Index /></Layout>} />
           <Route path="/clubs" element={<Layout><Clubs /></Layout>} />
-          <Route path="/clubs/:id" element={<Layout><ClubDetail /></Layout>} />
+          <Route path="/clubs/:id/*" element={<Layout><ClubLayout /></Layout>}>
+            <Route index element={<ClubDashboard />} />
+            <Route path="info" element={<ClubInfoPage />} />
+            <Route path="players" element={<ClubPlayersPage />} />
+            <Route path="staff" element={<ClubStaffPage />} />
+            <Route path="matches" element={<ClubMatchesPage />} />
+            <Route path="matches/:matchId" element={<ClubMatchDetailPage />} />
+            <Route path="documents" element={<ClubDocumentsPage />} />
+          </Route>
           <Route path="/players" element={<Layout><Players /></Layout>} />
           <Route path="/players/:id" element={<Layout><PlayerDetail /></Layout>} />
           <Route path="/competitions" element={<Layout><Competitions /></Layout>} />
