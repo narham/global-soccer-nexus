@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ClubLayout } from "./components/clubs/ClubLayout";
+import { PanitiaLayout } from "./components/panitia/PanitiaLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Clubs from "./pages/Clubs";
@@ -29,6 +30,11 @@ import TransferDetail from "./pages/TransferDetail";
 import Stadiums from "./pages/Stadiums";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
+import PanitiaDashboard from "./pages/panitia/PanitiaDashboard";
+import PanitiaCompetitionsPage from "./pages/panitia/PanitiaCompetitionsPage";
+import PanitiaCompetitionDetailPage from "./pages/panitia/PanitiaCompetitionDetailPage";
+import PanitiaMatchesPage from "./pages/panitia/PanitiaMatchesPage";
+import PanitiaMatchDetailPage from "./pages/panitia/PanitiaMatchDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -61,10 +67,20 @@ const App = () => (
           <Route path="/matches/:id" element={<Layout><MatchDetail /></Layout>} />
           <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
           <Route path="/transfers/:id" element={<Layout><TransferDetail /></Layout>} />
-            <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
-            <Route path="/users" element={<Layout><Users /></Layout>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+          <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
+          <Route path="/users" element={<Layout><Users /></Layout>} />
+          
+          {/* Panitia Routes */}
+          <Route path="/panitia" element={<PanitiaLayout />}>
+            <Route index element={<PanitiaDashboard />} />
+            <Route path="competitions" element={<PanitiaCompetitionsPage />} />
+            <Route path="competitions/:id" element={<PanitiaCompetitionDetailPage />} />
+            <Route path="matches" element={<PanitiaMatchesPage />} />
+            <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
+          </Route>
+          
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
