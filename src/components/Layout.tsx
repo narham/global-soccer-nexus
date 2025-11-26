@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Session } from "@supabase/supabase-js";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { CommandPalette } from "@/components/navigation/CommandPalette";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +16,7 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isAdminFederasi } = useUserRole();
 
   useEffect(() => {
     // Set up auth state listener
@@ -54,6 +58,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <SidebarProvider>
+      <CommandPalette />
       <div className="flex min-h-screen w-full bg-muted/30">
         <AppSidebar />
         <div className="flex-1 flex flex-col">
@@ -63,6 +68,12 @@ export function Layout({ children }: LayoutProps) {
               <h1 className="text-lg font-semibold text-gradient-primary">
                 Sistem Manajemen Sepakbola Indonesia
               </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+              {isAdminFederasi && <NotificationDropdown />}
             </div>
           </header>
           <main className="flex-1 p-6">

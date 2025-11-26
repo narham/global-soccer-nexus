@@ -11,6 +11,8 @@ import {
   LogOut,
   UserCog,
 } from "lucide-react";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
+import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import {
   Sidebar,
   SidebarContent,
@@ -51,6 +53,18 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { role, isAdminFederasi, isAdminKlub, isPanitia, isWasit } = useUserRole();
+  const { notifications } = useAdminNotifications();
+
+  // Count notifications by type
+  const competitionPendingCount = isAdminFederasi 
+    ? notifications.filter(n => n.type === 'competition').length 
+    : 0;
+  const playerPendingCount = isAdminFederasi 
+    ? notifications.filter(n => n.type === 'player' || n.type === 'player_registration' || n.type === 'player_document').length 
+    : 0;
+  const transferPendingCount = isAdminFederasi 
+    ? notifications.filter(n => n.type === 'transfer').length 
+    : 0;
 
   const isActive = (path: string) => currentPath === path;
 
@@ -112,16 +126,28 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {filteredMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <NavLink to={item.url} end>
-                      <item.icon className={collapsed ? "mx-auto" : ""} />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {filteredMenuItems.map((item) => {
+                let notifCount = 0;
+                if (isAdminFederasi) {
+                  if (item.title === 'Kompetisi') notifCount = competitionPendingCount;
+                  if (item.title === 'Pemain') notifCount = playerPendingCount;
+                  if (item.title === 'Transfer') notifCount = transferPendingCount;
+                }
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <NavLink to={item.url} end className="flex items-center justify-between w-full">
+                        <div className="flex items-center">
+                          <item.icon className={collapsed ? "mx-auto" : ""} />
+                          {!collapsed && <span>{item.title}</span>}
+                        </div>
+                        {!collapsed && <NotificationBadge count={notifCount} />}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

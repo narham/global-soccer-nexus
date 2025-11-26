@@ -11,6 +11,7 @@ import { PlayerBiodataTab } from "@/components/players/PlayerBiodataTab";
 import { PlayerStatisticsTab } from "@/components/players/PlayerStatisticsTab";
 import { PlayerHistoryTab } from "@/components/players/PlayerHistoryTab";
 import { PlayerContractTab } from "@/components/players/PlayerContractTab";
+import { PlayerDocumentsTab } from "@/components/players/PlayerDocumentsTab";
 import { PlayerFormDialog } from "@/components/players/PlayerFormDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PlayerRegistrationStatusBadge } from "@/components/players/PlayerRegistrationStatusBadge";
@@ -116,11 +117,12 @@ const PlayerDetail = () => {
       )}
 
       <Tabs defaultValue="biodata" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="biodata">📋 Biodata</TabsTrigger>
           <TabsTrigger value="statistics">📊 Statistik</TabsTrigger>
           <TabsTrigger value="history">🔄 Riwayat Klub</TabsTrigger>
           <TabsTrigger value="contract">📝 Kontrak & Status</TabsTrigger>
+          <TabsTrigger value="documents">📎 Dokumen</TabsTrigger>
         </TabsList>
 
         <TabsContent value="biodata">
@@ -137,6 +139,10 @@ const PlayerDetail = () => {
 
         <TabsContent value="contract">
           <PlayerContractTab player={player} onUpdate={fetchPlayer} />
+        </TabsContent>
+
+        <TabsContent value="documents">
+          <PlayerDocumentsTab playerId={player.id} clubId={player.current_club_id} />
         </TabsContent>
       </Tabs>
 

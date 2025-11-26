@@ -671,6 +671,62 @@ export type Database = {
           },
         ]
       }
+      player_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          document_url: string
+          id: string
+          player_id: string
+          rejection_reason: string | null
+          updated_at: string
+          uploaded_by: string | null
+          valid_from: string | null
+          valid_until: string | null
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          document_url: string
+          id?: string
+          player_id: string
+          rejection_reason?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          document_url?: string
+          id?: string
+          player_id?: string
+          rejection_reason?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_documents_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       player_history: {
         Row: {
           club_id: string
