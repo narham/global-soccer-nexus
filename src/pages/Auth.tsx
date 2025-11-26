@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Trophy } from "lucide-react";
+import { Trophy, ArrowLeft } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -119,8 +119,18 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary-glow p-4">
-      <Card className="w-full max-w-md shadow-elegant">
-        <CardHeader className="space-y-1 text-center">
+      <div className="w-full max-w-md">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate("/public")}
+          className="mb-4 text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Kembali ke Portal Public
+        </Button>
+        
+        <Card className="shadow-elegant">
+          <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center shadow-glow">
               <Trophy className="h-8 w-8 text-white" />
@@ -223,6 +233,7 @@ const Auth = () => {
           </Tabs>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

@@ -35,6 +35,7 @@ import PanitiaCompetitionsPage from "./pages/panitia/PanitiaCompetitionsPage";
 import PanitiaCompetitionDetailPage from "./pages/panitia/PanitiaCompetitionDetailPage";
 import PanitiaMatchesPage from "./pages/panitia/PanitiaMatchesPage";
 import PanitiaMatchDetailPage from "./pages/panitia/PanitiaMatchDetailPage";
+import PublicPage from "./pages/PublicPage";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,10 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Routes - No Auth Required */}
+          <Route path="/public" element={<PublicPage />} />
+          
+          {/* Auth Routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Layout><Index /></Layout>} />
           <Route path="/clubs" element={<Layout><Clubs /></Layout>} />
