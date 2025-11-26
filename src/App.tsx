@@ -1,0 +1,54 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Clubs from "./pages/Clubs";
+import ClubDetail from "./pages/ClubDetail";
+import Players from "./pages/Players";
+import PlayerDetail from "./pages/PlayerDetail";
+import Competitions from "./pages/Competitions";
+import CompetitionDetail from "./pages/CompetitionDetail";
+import Matches from "./pages/Matches";
+import MatchDetail from "./pages/MatchDetail";
+import Transfers from "./pages/Transfers";
+import TransferDetail from "./pages/TransferDetail";
+import Stadiums from "./pages/Stadiums";
+import Users from "./pages/Users";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/" element={<Layout><Index /></Layout>} />
+          <Route path="/clubs" element={<Layout><Clubs /></Layout>} />
+          <Route path="/clubs/:id" element={<Layout><ClubDetail /></Layout>} />
+          <Route path="/players" element={<Layout><Players /></Layout>} />
+          <Route path="/players/:id" element={<Layout><PlayerDetail /></Layout>} />
+          <Route path="/competitions" element={<Layout><Competitions /></Layout>} />
+          <Route path="/competitions/:id" element={<Layout><CompetitionDetail /></Layout>} />
+          <Route path="/matches" element={<Layout><Matches /></Layout>} />
+          <Route path="/matches/:id" element={<Layout><MatchDetail /></Layout>} />
+          <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
+          <Route path="/transfers/:id" element={<Layout><TransferDetail /></Layout>} />
+            <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
+            <Route path="/users" element={<Layout><Users /></Layout>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
+
+export default App;
