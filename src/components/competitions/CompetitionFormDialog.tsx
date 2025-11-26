@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const competitionSchema = z.object({
   name: z.string().min(3, "Nama kompetisi minimal 3 karakter"),
@@ -37,6 +38,7 @@ interface CompetitionFormDialogProps {
 export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSuccess }: CompetitionFormDialogProps) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { isPanitia } = useUserRole();
 
   const form = useForm<CompetitionFormData>({
     resolver: zodResolver(competitionSchema),
@@ -74,6 +76,8 @@ export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSucce
   const onSubmit = async (data: CompetitionFormData) => {
     setLoading(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const competitionData: any = {
         name: data.name,
         season: data.season,
@@ -95,9 +99,26 @@ export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSucce
         if (error) throw error;
         toast({ title: "Kompetisi berhasil diupdate" });
       } else {
+        // Set created_by and approval_status for new competitions
+        if (isPanitia) {
+          competitionData.created_by = user?.id;
+          competitionData.approval_status = "pending";
+        } else {
+          // Admin federasi competitions are auto-approved
+          competitionData.approval_status = "approved";
+        }
+        
         const { error } = await supabase.from("competitions").insert([competitionData]);
         if (error) throw error;
-        toast({ title: "Kompetisi berhasil dibuat" });
+        
+        if (isPanitia) {
+          toast({ 
+            title: "Kompetisi berhasil dibuat",
+            description: "Menunggu persetujuan dari Admin Federasi"
+          });
+        } else {
+          toast({ title: "Kompetisi berhasil dibuat" });
+        }
       }
 
       onSuccess();

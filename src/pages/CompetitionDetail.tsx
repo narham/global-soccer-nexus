@@ -12,7 +12,9 @@ import { CompetitionTeamsTab } from "@/components/competitions/CompetitionTeamsT
 import { CompetitionMatchesTab } from "@/components/competitions/CompetitionMatchesTab";
 import { CompetitionStandingsTab } from "@/components/competitions/CompetitionStandingsTab";
 import CompetitionPlayerValidationTab from "@/components/competitions/CompetitionPlayerValidationTab";
+import CompetitionApprovalTab from "@/components/competitions/CompetitionApprovalTab";
 import { CompetitionFormDialog } from "@/components/competitions/CompetitionFormDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const CompetitionDetail = () => {
   const { id } = useParams();
@@ -21,6 +23,7 @@ const CompetitionDetail = () => {
   const [competition, setCompetition] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const { isAdminFederasi } = useUserRole();
 
   useEffect(() => {
     if (id) {
@@ -77,12 +80,15 @@ const CompetitionDetail = () => {
       <CompetitionHeader competition={competition} />
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className={`grid w-full ${isAdminFederasi ? 'grid-cols-6' : 'grid-cols-5'}`}>
           <TabsTrigger value="info">📋 Info</TabsTrigger>
           <TabsTrigger value="teams">👥 Peserta</TabsTrigger>
           <TabsTrigger value="matches">⚽ Jadwal</TabsTrigger>
           <TabsTrigger value="standings">📊 Klasemen</TabsTrigger>
           <TabsTrigger value="players">✅ Validasi Pemain</TabsTrigger>
+          {isAdminFederasi && (
+            <TabsTrigger value="approval">🔍 Approval</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="info">
@@ -104,6 +110,12 @@ const CompetitionDetail = () => {
         <TabsContent value="players">
           <CompetitionPlayerValidationTab competitionId={competition.id} />
         </TabsContent>
+
+        {isAdminFederasi && (
+          <TabsContent value="approval">
+            <CompetitionApprovalTab />
+          </TabsContent>
+        )}
       </Tabs>
 
       <CompetitionFormDialog

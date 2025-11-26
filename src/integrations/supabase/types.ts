@@ -276,7 +276,11 @@ export type Database = {
       }
       competitions: {
         Row: {
+          approval_status: string
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
+          created_by: string | null
           description: string | null
           end_date: string | null
           format: Database["public"]["Enums"]["competition_format"]
@@ -285,6 +289,7 @@ export type Database = {
           name: string
           num_groups: number | null
           num_teams: number | null
+          rejection_reason: string | null
           season: string
           start_date: string
           status: string | null
@@ -292,7 +297,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           format: Database["public"]["Enums"]["competition_format"]
@@ -301,6 +310,7 @@ export type Database = {
           name: string
           num_groups?: number | null
           num_teams?: number | null
+          rejection_reason?: string | null
           season: string
           start_date: string
           status?: string | null
@@ -308,7 +318,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          approval_status?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           end_date?: string | null
           format?: Database["public"]["Enums"]["competition_format"]
@@ -317,6 +331,7 @@ export type Database = {
           name?: string
           num_groups?: number | null
           num_teams?: number | null
+          rejection_reason?: string | null
           season?: string
           start_date?: string
           status?: string | null
