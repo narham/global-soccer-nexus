@@ -272,7 +272,59 @@ CREATE TABLE public.match_events (
     club_id uuid NOT NULL,
     description text,
     card_type public.card_type,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    player_out_id uuid,
+    goal_type text,
+    var_decision_type text,
+    red_card_reason text
+);
+
+
+--
+-- Name: match_lineups; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.match_lineups (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    match_id uuid NOT NULL,
+    club_id uuid NOT NULL,
+    player_id uuid NOT NULL,
+    position_type text NOT NULL,
+    "position" text NOT NULL,
+    shirt_number integer NOT NULL,
+    formation_position integer,
+    rating numeric(3,1),
+    minutes_played integer DEFAULT 0,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT match_lineups_position_type_check CHECK ((position_type = ANY (ARRAY['starting'::text, 'bench'::text])))
+);
+
+
+--
+-- Name: match_statistics; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.match_statistics (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    match_id uuid NOT NULL,
+    club_id uuid NOT NULL,
+    possession integer DEFAULT 0,
+    shots integer DEFAULT 0,
+    shots_on_target integer DEFAULT 0,
+    passes integer DEFAULT 0,
+    pass_accuracy integer DEFAULT 0,
+    tackles integer DEFAULT 0,
+    fouls integer DEFAULT 0,
+    corners integer DEFAULT 0,
+    offsides integer DEFAULT 0,
+    saves integer DEFAULT 0,
+    crosses integer DEFAULT 0,
+    clearances integer DEFAULT 0,
+    interceptions integer DEFAULT 0,
+    duels_won integer DEFAULT 0,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -296,7 +348,16 @@ CREATE TABLE public.matches (
     attendance integer,
     referee_name text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    half_time_home_score integer,
+    half_time_away_score integer,
+    assistant_referee_1 text,
+    assistant_referee_2 text,
+    fourth_official text,
+    var_official text,
+    weather_condition text,
+    pitch_condition text,
+    match_notes text
 );
 
 
@@ -401,7 +462,13 @@ CREATE TABLE public.players (
     place_of_birth text,
     nik_province text,
     nik_city text,
-    nik_district text
+    nik_district text,
+    registration_status text DEFAULT 'approved'::text NOT NULL,
+    registered_by uuid,
+    reviewed_by uuid,
+    reviewed_at timestamp with time zone,
+    rejection_reason text,
+    CONSTRAINT valid_registration_status CHECK ((registration_status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])))
 );
 
 
@@ -625,6 +692,22 @@ ALTER TABLE ONLY public.match_events
 
 
 --
+-- Name: match_lineups match_lineups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_lineups
+    ADD CONSTRAINT match_lineups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: match_statistics match_statistics_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_statistics
+    ADD CONSTRAINT match_statistics_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: matches matches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -761,6 +844,55 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
+-- Name: idx_match_lineups_club_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_match_lineups_club_id ON public.match_lineups USING btree (club_id);
+
+
+--
+-- Name: idx_match_lineups_match_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_match_lineups_match_id ON public.match_lineups USING btree (match_id);
+
+
+--
+-- Name: idx_match_lineups_player_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_match_lineups_player_id ON public.match_lineups USING btree (player_id);
+
+
+--
+-- Name: idx_match_statistics_club_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_match_statistics_club_id ON public.match_statistics USING btree (club_id);
+
+
+--
+-- Name: idx_match_statistics_match_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_match_statistics_match_id ON public.match_statistics USING btree (match_id);
+
+
+--
+-- Name: idx_players_registered_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_players_registered_by ON public.players USING btree (registered_by);
+
+
+--
+-- Name: idx_players_registration_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_players_registration_status ON public.players USING btree (registration_status);
+
+
+--
 -- Name: club_documents update_club_documents_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -793,6 +925,20 @@ CREATE TRIGGER update_competition_teams_updated_at BEFORE UPDATE ON public.compe
 --
 
 CREATE TRIGGER update_competitions_updated_at BEFORE UPDATE ON public.competitions FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: match_lineups update_match_lineups_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_match_lineups_updated_at BEFORE UPDATE ON public.match_lineups FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: match_statistics update_match_statistics_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_match_statistics_updated_at BEFORE UPDATE ON public.match_statistics FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -951,6 +1097,54 @@ ALTER TABLE ONLY public.match_events
 
 
 --
+-- Name: match_events match_events_player_out_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_events
+    ADD CONSTRAINT match_events_player_out_id_fkey FOREIGN KEY (player_out_id) REFERENCES public.players(id);
+
+
+--
+-- Name: match_lineups match_lineups_club_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_lineups
+    ADD CONSTRAINT match_lineups_club_id_fkey FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: match_lineups match_lineups_match_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_lineups
+    ADD CONSTRAINT match_lineups_match_id_fkey FOREIGN KEY (match_id) REFERENCES public.matches(id) ON DELETE CASCADE;
+
+
+--
+-- Name: match_lineups match_lineups_player_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_lineups
+    ADD CONSTRAINT match_lineups_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id) ON DELETE CASCADE;
+
+
+--
+-- Name: match_statistics match_statistics_club_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_statistics
+    ADD CONSTRAINT match_statistics_club_id_fkey FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: match_statistics match_statistics_match_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.match_statistics
+    ADD CONSTRAINT match_statistics_match_id_fkey FOREIGN KEY (match_id) REFERENCES public.matches(id) ON DELETE CASCADE;
+
+
+--
 -- Name: matches matches_away_club_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1068,6 +1262,22 @@ ALTER TABLE ONLY public.player_transfers
 
 ALTER TABLE ONLY public.players
     ADD CONSTRAINT players_current_club_id_fkey FOREIGN KEY (current_club_id) REFERENCES public.clubs(id);
+
+
+--
+-- Name: players players_registered_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.players
+    ADD CONSTRAINT players_registered_by_fkey FOREIGN KEY (registered_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: players players_reviewed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.players
+    ADD CONSTRAINT players_reviewed_by_fkey FOREIGN KEY (reviewed_by) REFERENCES auth.users(id);
 
 
 --
@@ -1237,6 +1447,20 @@ CREATE POLICY "Admin federasi can manage match events" ON public.match_events TO
 
 
 --
+-- Name: match_lineups Admin federasi can manage match lineups; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can manage match lineups" ON public.match_lineups USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
+-- Name: match_statistics Admin federasi can manage match statistics; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can manage match statistics" ON public.match_statistics USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
 -- Name: matches Admin federasi can manage matches; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1307,6 +1531,13 @@ CREATE POLICY "Admin federasi can update all requests" ON public.role_requests F
 
 
 --
+-- Name: players Admin federasi can update players and registration status; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can update players and registration status" ON public.players FOR UPDATE USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
 -- Name: profiles Admin federasi can view all profiles; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1367,6 +1598,20 @@ CREATE POLICY "Anyone can view competitions" ON public.competitions FOR SELECT T
 --
 
 CREATE POLICY "Anyone can view match events" ON public.match_events FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: match_lineups Anyone can view match lineups; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can view match lineups" ON public.match_lineups FOR SELECT USING (true);
+
+
+--
+-- Name: match_statistics Anyone can view match statistics; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can view match statistics" ON public.match_statistics FOR SELECT USING (true);
 
 
 --
@@ -1451,15 +1696,6 @@ CREATE POLICY "Club admin can manage their documents" ON public.club_documents T
 
 
 --
--- Name: players Club admin can manage their players; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Club admin can manage their players" ON public.players TO authenticated USING ((EXISTS ( SELECT 1
-   FROM public.user_roles
-  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = players.current_club_id)))));
-
-
---
 -- Name: club_staff Club admin can manage their staff; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1469,12 +1705,30 @@ CREATE POLICY "Club admin can manage their staff" ON public.club_staff TO authen
 
 
 --
+-- Name: players Club admin can register players; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can register players" ON public.players FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.user_roles
+  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = players.current_club_id)))));
+
+
+--
 -- Name: clubs Club admin can update their club; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Club admin can update their club" ON public.clubs FOR UPDATE TO authenticated USING ((EXISTS ( SELECT 1
    FROM public.user_roles
   WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = clubs.id)))));
+
+
+--
+-- Name: players Club admin can update their pending/rejected registrations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can update their pending/rejected registrations" ON public.players FOR UPDATE USING ((EXISTS ( SELECT 1
+   FROM public.user_roles
+  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (players.registered_by = auth.uid()) AND (players.registration_status = ANY (ARRAY['pending'::text, 'rejected'::text]))))));
 
 
 --
@@ -1516,6 +1770,15 @@ CREATE POLICY "Club admin can view documents for their transfers" ON public.tran
 
 
 --
+-- Name: players Club admin can view their club's approved players or their regi; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can view their club's approved players or their regi" ON public.players FOR SELECT USING ((EXISTS ( SELECT 1
+   FROM public.user_roles
+  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (((user_roles.club_id = players.current_club_id) AND (players.registration_status = 'approved'::text)) OR (players.registered_by = auth.uid()))))));
+
+
+--
 -- Name: competition_teams Panitia can manage competition teams; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1534,6 +1797,20 @@ CREATE POLICY "Panitia can manage competitions" ON public.competitions TO authen
 --
 
 CREATE POLICY "Panitia can manage match events" ON public.match_events TO authenticated USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
+
+
+--
+-- Name: match_lineups Panitia can manage match lineups; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can manage match lineups" ON public.match_lineups USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
+
+
+--
+-- Name: match_statistics Panitia can manage match statistics; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can manage match statistics" ON public.match_statistics USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
 
 
 --
@@ -1627,6 +1904,18 @@ ALTER TABLE public.competitions ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.match_events ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: match_lineups; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.match_lineups ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: match_statistics; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.match_statistics ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: matches; Type: ROW SECURITY; Schema: public; Owner: -
