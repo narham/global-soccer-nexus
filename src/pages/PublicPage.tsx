@@ -3,7 +3,7 @@ import { PublicNav } from "@/components/public/PublicNav";
 import { PublicStandingsTab } from "@/components/public/PublicStandingsTab";
 import { PublicMatchesTab } from "@/components/public/PublicMatchesTab";
 import { PublicPlayersTab } from "@/components/public/PublicPlayersTab";
-import { Trophy, Calendar, Users } from "lucide-react";
+import { Trophy, Calendar, Users, Zap } from "lucide-react";
 
 export default function PublicPage() {
   return (
@@ -18,8 +18,12 @@ export default function PublicPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="standings" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[600px]">
+        <Tabs defaultValue="live" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
+            <TabsTrigger value="live" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              <span>🔴 Live</span>
+            </TabsTrigger>
             <TabsTrigger value="standings" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
               <span>Klasemen</span>
@@ -33,6 +37,10 @@ export default function PublicPage() {
               <span>Statistik</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="live" className="space-y-4">
+            <PublicMatchesTab />
+          </TabsContent>
 
           <TabsContent value="standings" className="space-y-4">
             <PublicStandingsTab />

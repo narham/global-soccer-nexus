@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const PublicMatchesTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -18,6 +20,27 @@ export const PublicMatchesTab = () => {
   useEffect(() => {
     fetchCompetitions();
     fetchMatches();
+
+    // Subscribe to realtime updates for live matches
+    const channel = supabase
+      .channel('public-matches')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'matches',
+          filter: 'status=eq.live'
+        },
+        () => {
+          fetchMatches();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -70,16 +93,19 @@ export const PublicMatchesTab = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+    const variants: Record<string, { variant: any; label: string; className?: string }> = {
       scheduled: { variant: "outline", label: "Dijadwalkan" },
-      live: { variant: "default", label: "Live" },
+      live: { variant: "default", label: "🔴 LIVE", className: "animate-pulse" },
       finished: { variant: "secondary", label: "Selesai" },
       postponed: { variant: "destructive", label: "Ditunda" },
       cancelled: { variant: "destructive", label: "Dibatalkan" },
     };
     const config = variants[status] || { variant: "outline", label: status };
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+    return <Badge variant={config.variant} className={config.className}>{config.label}</Badge>;
   };
+
+  const liveMatches = matches.filter(m => m.status === "live");
+  const otherMatches = matches.filter(m => m.status !== "live");
 
   if (loading) {
     return (
@@ -130,7 +156,69 @@ export const PublicMatchesTab = () => {
             </p>
           ) : (
             <div className="space-y-4">
-              {matches.map((match) => (
+              {/* Live Matches Section */}
+              {liveMatches.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    🔴 Pertandingan Live
+                  </h3>
+                  {liveMatches.map((match) => (
+                    <Card key={match.id} className="hover:shadow-md transition-shadow border-primary">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm font-medium text-muted-foreground">
+                                {match.competition.name}
+                              </span>
+                              {getStatusBadge(match.status)}
+                            </div>
+                            <div className="text-sm text-muted-foreground mb-3">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(match.match_date), "EEEE, d MMMM yyyy - HH:mm", { locale: id })} WIB
+                              </div>
+                              {match.venue && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <MapPin className="h-3 w-3" />
+                                  {match.venue}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-6">
+                            <Link to={`/public/clubs/${match.home_club.id}`} className="flex items-center gap-3 min-w-[200px] hover:opacity-80">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={match.home_club.logo_url || ""} alt={match.home_club.name} />
+                                <AvatarFallback>{match.home_club.name.substring(0, 2)}</AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium flex-1">{match.home_club.name}</span>
+                            </Link>
+                            
+                            <div className="text-center min-w-[80px]">
+                              <div className="text-2xl font-bold">
+                                {match.home_score} - {match.away_score}
+                              </div>
+                            </div>
+                            
+                            <Link to={`/public/clubs/${match.away_club.id}`} className="flex items-center gap-3 min-w-[200px] hover:opacity-80">
+                              <span className="font-medium flex-1 text-right">{match.away_club.name}</span>
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage src={match.away_club.logo_url || ""} alt={match.away_club.name} />
+                                <AvatarFallback>{match.away_club.name.substring(0, 2)}</AvatarFallback>
+                              </Avatar>
+                            </Link>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {/* Other Matches */}
+              {otherMatches.map((match) => (
                 <Card key={match.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between gap-4">
@@ -156,16 +244,13 @@ export const PublicMatchesTab = () => {
                       </div>
                       
                       <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3 min-w-[200px]">
-                          {match.home_club.logo_url && (
-                            <img 
-                              src={match.home_club.logo_url} 
-                              alt={match.home_club.name}
-                              className="h-8 w-8 object-contain"
-                            />
-                          )}
+                        <Link to={`/public/clubs/${match.home_club.id}`} className="flex items-center gap-3 min-w-[200px] hover:opacity-80">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={match.home_club.logo_url || ""} alt={match.home_club.name} />
+                            <AvatarFallback>{match.home_club.name.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
                           <span className="font-medium flex-1">{match.home_club.name}</span>
-                        </div>
+                        </Link>
                         
                         <div className="text-center min-w-[80px]">
                           {match.status === "finished" ? (
@@ -179,16 +264,13 @@ export const PublicMatchesTab = () => {
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-3 min-w-[200px]">
+                        <Link to={`/public/clubs/${match.away_club.id}`} className="flex items-center gap-3 min-w-[200px] hover:opacity-80">
                           <span className="font-medium flex-1 text-right">{match.away_club.name}</span>
-                          {match.away_club.logo_url && (
-                            <img 
-                              src={match.away_club.logo_url} 
-                              alt={match.away_club.name}
-                              className="h-8 w-8 object-contain"
-                            />
-                          )}
-                        </div>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={match.away_club.logo_url || ""} alt={match.away_club.name} />
+                            <AvatarFallback>{match.away_club.name.substring(0, 2)}</AvatarFallback>
+                          </Avatar>
+                        </Link>
                       </div>
                     </div>
                   </CardContent>
