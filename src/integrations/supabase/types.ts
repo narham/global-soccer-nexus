@@ -159,6 +159,76 @@ export type Database = {
         }
         Relationships: []
       }
+      competition_player_registrations: {
+        Row: {
+          club_id: string
+          competition_id: string
+          created_at: string | null
+          id: string
+          player_id: string
+          registered_at: string | null
+          registered_by: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          shirt_number: number
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          club_id: string
+          competition_id: string
+          created_at?: string | null
+          id?: string
+          player_id: string
+          registered_at?: string | null
+          registered_by?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shirt_number: number
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          club_id?: string
+          competition_id?: string
+          created_at?: string | null
+          id?: string
+          player_id?: string
+          registered_at?: string | null
+          registered_by?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shirt_number?: number
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_player_registrations_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_player_registrations_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competition_player_registrations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_teams: {
         Row: {
           club_id: string

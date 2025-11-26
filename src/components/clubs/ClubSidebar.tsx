@@ -7,6 +7,7 @@ import {
   UserCog,
   Calendar,
   FileText,
+  Target,
 } from "lucide-react";
 import {
   Sidebar,
@@ -35,6 +36,7 @@ export function ClubSidebar({ clubId }: ClubSidebarProps) {
     { title: "Info Umum", url: `/clubs/${clubId}/info`, icon: Info },
     { title: "Pemain", url: `/clubs/${clubId}/players`, icon: Users },
     { title: "Staf", url: `/clubs/${clubId}/staff`, icon: UserCog },
+    { title: "Kompetisi", url: `/clubs/${clubId}/competitions`, icon: Target },
     { title: "Pertandingan", url: `/clubs/${clubId}/matches`, icon: Calendar },
     { title: "Dokumen", url: `/clubs/${clubId}/documents`, icon: FileText },
   ];
