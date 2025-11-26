@@ -9,6 +9,7 @@ import { ClubInfoTab } from "@/components/clubs/ClubInfoTab";
 import { ClubDocumentsTab } from "@/components/clubs/ClubDocumentsTab";
 import { ClubStaffTab } from "@/components/clubs/ClubStaffTab";
 import { ClubPlayersTab } from "@/components/clubs/ClubPlayersTab";
+import { ClubMatchesTab } from "@/components/clubs/ClubMatchesTab";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
@@ -106,11 +107,12 @@ const ClubDetail = () => {
       <ClubHeader club={club} />
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="info">Info Umum</TabsTrigger>
           <TabsTrigger value="documents">Dokumen ({documents.length})</TabsTrigger>
           <TabsTrigger value="staff">Staf ({staff.length})</TabsTrigger>
           <TabsTrigger value="players">Pemain ({players.length})</TabsTrigger>
+          <TabsTrigger value="matches">Pertandingan</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="mt-6">
@@ -127,6 +129,10 @@ const ClubDetail = () => {
 
         <TabsContent value="players" className="mt-6">
           <ClubPlayersTab players={players} />
+        </TabsContent>
+
+        <TabsContent value="matches" className="mt-6">
+          <ClubMatchesTab clubId={club.id} />
         </TabsContent>
       </Tabs>
     </div>
