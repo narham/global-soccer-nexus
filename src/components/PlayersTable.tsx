@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { TableActions } from "./TableActions";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { PlayerRegistrationStatusBadge } from "./players/PlayerRegistrationStatusBadge";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface Player {
   id: string;
@@ -22,6 +24,7 @@ interface Player {
   nationality: string;
   date_of_birth: string;
   injury_status: string | null;
+  registration_status?: string;
   clubs?: {
     name: string;
   } | null;
@@ -37,6 +40,7 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const { toast } = useToast();
+  const { isAdminKlub } = useUserRole();
 
   const getPositionColor = (position: string) => {
     switch (position) {
@@ -128,7 +132,8 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
               <TableHead className="hidden md:table-cell">Klub</TableHead>
               <TableHead className="hidden lg:table-cell">Kewarganegaraan</TableHead>
               <TableHead className="hidden xl:table-cell">Usia</TableHead>
-              <TableHead className="hidden lg:table-cell">Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Status Cedera</TableHead>
+              {isAdminKlub && <TableHead>Status Registrasi</TableHead>}
               <TableHead className="w-12">Aksi</TableHead>
             </TableRow>
           </TableHeader>
@@ -167,6 +172,13 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
                       {getInjuryLabel(player.injury_status)}
                     </Badge>
                   </TableCell>
+                  {isAdminKlub && (
+                    <TableCell>
+                      <PlayerRegistrationStatusBadge 
+                        status={player.registration_status || 'approved'} 
+                      />
+                    </TableCell>
+                  )}
                   <TableCell>
                     <TableActions
                       onView={() => handleView(player)}

@@ -630,6 +630,11 @@ export type Database = {
           place_of_birth: string | null
           position: Database["public"]["Enums"]["player_position"]
           preferred_foot: string | null
+          registered_by: string | null
+          registration_status: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           shirt_number: number | null
           transfer_status: string | null
           updated_at: string
@@ -655,6 +660,11 @@ export type Database = {
           place_of_birth?: string | null
           position: Database["public"]["Enums"]["player_position"]
           preferred_foot?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           shirt_number?: number | null
           transfer_status?: string | null
           updated_at?: string
@@ -680,6 +690,11 @@ export type Database = {
           place_of_birth?: string | null
           position?: Database["public"]["Enums"]["player_position"]
           preferred_foot?: string | null
+          registered_by?: string | null
+          registration_status?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           shirt_number?: number | null
           transfer_status?: string | null
           updated_at?: string

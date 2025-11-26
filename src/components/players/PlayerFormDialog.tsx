@@ -141,6 +141,9 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
         }
       }
 
+      // Get current user for registered_by field
+      const { data: { user } } = await supabase.auth.getUser();
+
       const playerData: any = {
         full_name: data.full_name,
         nik: data.nik || null,
@@ -159,16 +162,29 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
         injury_status: data.injury_status || "fit",
         transfer_status: isAdminKlub && player ? player.transfer_status : (data.transfer_status || "not_available"),
         photo_url: data.photo_url || null,
+        // Set registration status to pending for club admin new players
+        ...(isAdminKlub && !player ? { 
+          registration_status: 'pending',
+          registered_by: user?.id 
+        } : {}),
       };
 
       if (player) {
         const { error } = await supabase.from("players").update(playerData).eq("id", player.id);
         if (error) throw error;
-        toast({ title: "Pemain berhasil diupdate" });
+        toast({ 
+          title: "Pemain berhasil diupdate",
+          description: `Data ${data.full_name} berhasil diperbarui.`
+        });
       } else {
         const { error } = await supabase.from("players").insert([playerData]);
         if (error) throw error;
-        toast({ title: "Pemain berhasil ditambahkan" });
+        toast({ 
+          title: "Pemain berhasil didaftarkan",
+          description: isAdminKlub 
+            ? `${data.full_name} berhasil didaftarkan. Menunggu persetujuan Admin Federasi.`
+            : `${data.full_name} berhasil didaftarkan ke klub.`
+        });
       }
 
       onSuccess();
