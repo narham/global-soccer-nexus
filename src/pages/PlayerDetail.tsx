@@ -13,6 +13,9 @@ import { PlayerHistoryTab } from "@/components/players/PlayerHistoryTab";
 import { PlayerContractTab } from "@/components/players/PlayerContractTab";
 import { PlayerFormDialog } from "@/components/players/PlayerFormDialog";
 import { useUserRole } from "@/hooks/useUserRole";
+import { PlayerRegistrationStatusBadge } from "@/components/players/PlayerRegistrationStatusBadge";
+import { PlayerRegistrationReview } from "@/components/players/PlayerRegistrationReview";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PlayerDetail = () => {
   const { id } = useParams();
@@ -84,6 +87,33 @@ const PlayerDetail = () => {
       </div>
 
       <PlayerHeader player={player} />
+
+      {/* Registration Status Alert for Club Admin */}
+      {isAdminKlub && player.registration_status && (
+        <Alert className={
+          player.registration_status === 'pending' ? 'border-amber-500 bg-amber-50' :
+          player.registration_status === 'rejected' ? 'border-red-500 bg-red-50' :
+          'border-green-500 bg-green-50'
+        }>
+          <AlertDescription className="flex items-center justify-between">
+            <div>
+              <span className="font-semibold">Status Registrasi: </span>
+              <PlayerRegistrationStatusBadge status={player.registration_status} />
+              {player.rejection_reason && (
+                <div className="mt-2">
+                  <span className="font-semibold text-destructive">Alasan Penolakan:</span>
+                  <p className="text-sm mt-1">{player.rejection_reason}</p>
+                </div>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Registration Review Card for Admin Federasi */}
+      {isAdminFederasi && (
+        <PlayerRegistrationReview player={player} onUpdate={fetchPlayer} />
+      )}
 
       <Tabs defaultValue="biodata" className="w-full">
         <TabsList className="grid w-full grid-cols-4">

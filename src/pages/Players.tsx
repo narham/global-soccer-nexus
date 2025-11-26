@@ -61,14 +61,14 @@ const Players = () => {
         .select(`
           *,
           clubs:current_club_id (name)
-        `);
+        `)
+        .order("full_name");
 
-      // Filter by club if Admin Klub
-      if (isAdminKlub && clubId) {
-        query = query.eq("current_club_id", clubId);
-      }
-
-      const { data, error } = await query.order("full_name");
+      // Filter is handled by RLS policies
+      // Admin Klub will only see their approved players + their own registrations
+      // Admin Federasi will see all players
+      
+      const { data, error } = await query;
 
       if (error) throw error;
       setPlayers(data || []);
