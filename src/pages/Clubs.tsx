@@ -10,6 +10,9 @@ import { ClubFormDialog } from "@/components/clubs/ClubFormDialog";
 import { DataImportDialog } from "@/components/import/DataImportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/useUserRole";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { PendingClubsTable } from "@/components/clubs/PendingClubsTable";
 
 interface Club {
   id: string;
@@ -19,16 +22,18 @@ interface Club {
   founded_year: number | null;
   license_status: string | null;
   stadium_name: string | null;
+  created_at: string;
 }
 
 const Clubs = () => {
   const [clubs, setClubs] = useState<Club[]>([]);
+  const [pendingClubs, setPendingClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const { toast } = useToast();
-  const { isAdminKlub, clubId, loading: roleLoading } = useUserRole();
+  const { isAdminKlub, isAdminFederasi, clubId, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,7 +45,10 @@ const Clubs = () => {
 
   useEffect(() => {
     fetchClubs();
-  }, []);
+    if (isAdminFederasi) {
+      fetchPendingClubs();
+    }
+  }, [isAdminFederasi]);
 
   const fetchClubs = async () => {
     try {
@@ -49,6 +57,11 @@ const Clubs = () => {
       // Admin Klub only sees their own club
       if (isAdminKlub && clubId) {
         query = query.eq("id", clubId);
+      }
+      
+      // For Admin Federasi, only show approved clubs in main tab
+      if (isAdminFederasi) {
+        query = query.neq("license_status", "pending");
       }
       
       const { data, error } = await query.order("name");
@@ -63,6 +76,32 @@ const Clubs = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPendingClubs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("clubs")
+        .select("*")
+        .eq("license_status", "pending")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setPendingClubs(data || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal memuat data klub pending",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchClubs();
+    if (isAdminFederasi) {
+      fetchPendingClubs();
     }
   };
 
@@ -123,6 +162,43 @@ const Clubs = () => {
             <Skeleton className="h-10 w-64" />
           </div>
         </div>
+      ) : isAdminFederasi ? (
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList>
+            <TabsTrigger value="all">
+              Semua Klub
+              <Badge variant="secondary" className="ml-2">
+                {filteredClubs.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="pending">
+              Klub Pending
+              {pendingClubs.length > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {pendingClubs.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="all" className="mt-6">
+            {filteredClubs.length === 0 ? (
+              <div className="rounded-md border">
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground">
+                    {searchTerm ? "Tidak ada klub yang ditemukan" : "Belum ada data klub"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <ClubsTable clubs={filteredClubs} onRefresh={handleRefresh} />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="pending" className="mt-6">
+            <PendingClubsTable clubs={pendingClubs} onRefresh={handleRefresh} />
+          </TabsContent>
+        </Tabs>
       ) : filteredClubs.length === 0 ? (
         <div className="rounded-md border">
           <div className="flex flex-col items-center justify-center py-12">
@@ -132,7 +208,7 @@ const Clubs = () => {
           </div>
         </div>
       ) : (
-        <ClubsTable clubs={filteredClubs} onRefresh={fetchClubs} />
+        <ClubsTable clubs={filteredClubs} onRefresh={handleRefresh} />
       )}
 
       <ClubFormDialog

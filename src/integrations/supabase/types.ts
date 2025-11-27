@@ -174,6 +174,65 @@ export type Database = {
         }
         Relationships: []
       }
+      competition_documents: {
+        Row: {
+          competition_id: string
+          created_at: string | null
+          document_type: string
+          document_url: string
+          id: string
+          notes: string | null
+          rejection_reason: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          valid_from: string | null
+          valid_until: string | null
+          verified: boolean | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          competition_id: string
+          created_at?: string | null
+          document_type: string
+          document_url: string
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          competition_id?: string
+          created_at?: string | null
+          document_type?: string
+          document_url?: string
+          id?: string
+          notes?: string | null
+          rejection_reason?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          verified?: boolean | null
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competition_documents_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competition_player_registrations: {
         Row: {
           club_id: string

@@ -11,6 +11,7 @@ import { CompetitionInfoTab } from "@/components/competitions/CompetitionInfoTab
 import { CompetitionTeamsTab } from "@/components/competitions/CompetitionTeamsTab";
 import { CompetitionMatchesTab } from "@/components/competitions/CompetitionMatchesTab";
 import { CompetitionStandingsTab } from "@/components/competitions/CompetitionStandingsTab";
+import { CompetitionDocumentsTab } from "@/components/competitions/CompetitionDocumentsTab";
 import { CompetitionFormDialog } from "@/components/competitions/CompetitionFormDialog";
 import { CompetitionApprovalBadge } from "@/components/panitia/CompetitionApprovalBadge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -20,12 +21,14 @@ export default function PanitiaCompetitionDetailPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [competition, setCompetition] = useState<any>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchCompetition();
+      fetchDocuments();
     }
   }, [id]);
 
@@ -48,6 +51,25 @@ export default function PanitiaCompetitionDetailPage() {
       navigate("/panitia/competitions");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("competition_documents")
+        .select("*")
+        .eq("competition_id", id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setDocuments(data || []);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal memuat dokumen",
+        description: error.message,
+      });
     }
   };
 
@@ -107,11 +129,12 @@ export default function PanitiaCompetitionDetailPage() {
       <CompetitionHeader competition={competition} />
 
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="info">📋 Info</TabsTrigger>
           <TabsTrigger value="teams" disabled={!isApproved}>👥 Peserta</TabsTrigger>
           <TabsTrigger value="matches" disabled={!isApproved}>⚽ Jadwal</TabsTrigger>
           <TabsTrigger value="standings" disabled={!isApproved}>📊 Klasemen</TabsTrigger>
+          <TabsTrigger value="documents">📎 Dokumen</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
@@ -133,6 +156,14 @@ export default function PanitiaCompetitionDetailPage() {
             </TabsContent>
           </>
         )}
+
+        <TabsContent value="documents">
+          <CompetitionDocumentsTab 
+            competitionId={id!} 
+            documents={documents} 
+            onRefresh={fetchDocuments} 
+          />
+        </TabsContent>
       </Tabs>
 
       {canEdit && (
