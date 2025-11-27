@@ -53,10 +53,16 @@ export function TransferWindowFormDialog({ open, onOpenChange, onSuccess, editin
     try {
       // If setting as active, deactivate all other windows first
       if (formData.is_active) {
-        await supabase
+        const query = supabase
           .from("transfer_windows")
-          .update({ is_active: false })
-          .neq("id", editingWindow?.id || "");
+          .update({ is_active: false });
+        
+        // Only exclude current window if editing
+        if (editingWindow?.id) {
+          query.neq("id", editingWindow.id);
+        }
+        
+        await query;
       }
 
       if (editingWindow) {
@@ -70,7 +76,7 @@ export function TransferWindowFormDialog({ open, onOpenChange, onSuccess, editin
       } else {
         const { error } = await supabase
           .from("transfer_windows")
-          .insert([formData]);
+          .insert(formData);
 
         if (error) throw error;
         toast.success("Transfer window berhasil dibuat");
