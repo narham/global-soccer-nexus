@@ -10,6 +10,7 @@ import {
   ArrowRightLeft,
   LogOut,
   UserCog,
+  Gavel,
 } from "lucide-react";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
@@ -38,6 +39,7 @@ const menuItems = [
   { title: "Kompetisi", url: "/competitions", icon: Trophy },
   { title: "Pertandingan", url: "/matches", icon: Calendar },
   { title: "Transfer", url: "/transfers", icon: ArrowRightLeft },
+  { title: "Wasit", url: "/referees", icon: Gavel },
   { title: "Stadion", url: "/stadiums", icon: Building2 },
 ];
 
