@@ -200,9 +200,9 @@ export const QuickAccessBar = () => {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {shortcuts.map((item) => (
+          {shortcuts.map((item, index) => (
             <Button
-              key={item.href}
+              key={`${item.href}-${index}`}
               variant={item.variant as any}
               className="h-auto flex-col items-start p-4 relative"
               onClick={() => navigate(item.href)}
