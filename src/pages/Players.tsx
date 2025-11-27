@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PlayersTable } from "@/components/PlayersTable";
 import { PendingPlayersTable } from "@/components/players/PendingPlayersTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlayerFormDialog } from "@/components/players/PlayerFormDialog";
+import { DataImportDialog } from "@/components/import/DataImportDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 import { TransferFormDialog } from "@/components/transfers/TransferFormDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -35,6 +36,7 @@ const Players = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [transferData, setTransferData] = useState<{ playerId: string; fromClubId: string } | null>(null);
   const { toast } = useToast();
@@ -149,10 +151,18 @@ const Players = () => {
           </p>
         </div>
         {(!isAdminKlub || (isAdminKlub && clubId)) && (
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Registrasi Pemain
-          </Button>
+          <div className="flex gap-2">
+            {isAdminFederasi && (
+              <Button variant="outline" onClick={() => setImportOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import Excel
+              </Button>
+            )}
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Registrasi Pemain
+            </Button>
+          </div>
         )}
       </div>
 
@@ -242,6 +252,13 @@ const Players = () => {
       <TransferFormDialog
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
+        onSuccess={handleRefresh}
+      />
+
+      <DataImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entityType="players"
         onSuccess={handleRefresh}
       />
     </div>

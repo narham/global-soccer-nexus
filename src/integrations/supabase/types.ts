@@ -114,6 +114,8 @@ export type Database = {
           away_color: string | null
           city: string | null
           created_at: string
+          description: string | null
+          email: string | null
           founded_year: number | null
           home_color: string | null
           id: string
@@ -121,15 +123,20 @@ export type Database = {
           license_valid_until: string | null
           logo_url: string | null
           name: string
+          phone: string | null
           short_name: string | null
+          social_media: string | null
           stadium_name: string | null
           updated_at: string
+          website: string | null
         }
         Insert: {
           address?: string | null
           away_color?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
+          email?: string | null
           founded_year?: number | null
           home_color?: string | null
           id?: string
@@ -137,15 +144,20 @@ export type Database = {
           license_valid_until?: string | null
           logo_url?: string | null
           name: string
+          phone?: string | null
           short_name?: string | null
+          social_media?: string | null
           stadium_name?: string | null
           updated_at?: string
+          website?: string | null
         }
         Update: {
           address?: string | null
           away_color?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
+          email?: string | null
           founded_year?: number | null
           home_color?: string | null
           id?: string
@@ -153,9 +165,12 @@ export type Database = {
           license_valid_until?: string | null
           logo_url?: string | null
           name?: string
+          phone?: string | null
           short_name?: string | null
+          social_media?: string | null
           stadium_name?: string | null
           updated_at?: string
+          website?: string | null
         }
         Relationships: []
       }

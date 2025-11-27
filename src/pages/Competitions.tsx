@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CompetitionsTable } from "@/components/CompetitionsTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CompetitionFormDialog } from "@/components/competitions/CompetitionFormDialog";
+import { DataImportDialog } from "@/components/import/DataImportDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface Competition {
   id: string;
@@ -24,7 +26,9 @@ const Competitions = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const { toast } = useToast();
+  const { isAdminFederasi, isPanitia } = useUserRole();
 
   useEffect(() => {
     fetchCompetitions();
@@ -66,10 +70,18 @@ const Competitions = () => {
           <h2 className="text-3xl font-bold tracking-tight">Manajemen Kompetisi</h2>
           <p className="text-muted-foreground">Kelola liga, turnamen, dan kompetisi</p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Buat Kompetisi
-        </Button>
+        <div className="flex gap-2">
+          {(isAdminFederasi || isPanitia) && (
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Excel
+            </Button>
+          )}
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Buat Kompetisi
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -116,6 +128,13 @@ const Competitions = () => {
       <CompetitionFormDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onSuccess={fetchCompetitions}
+      />
+
+      <DataImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entityType="competitions"
         onSuccess={fetchCompetitions}
       />
     </div>
