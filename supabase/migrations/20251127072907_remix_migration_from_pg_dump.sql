@@ -218,7 +218,34 @@ CREATE TABLE public.clubs (
     license_status text DEFAULT 'pending'::text,
     license_valid_until date,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    email text,
+    phone text,
+    website text,
+    social_media text,
+    description text
+);
+
+
+--
+-- Name: competition_player_registrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.competition_player_registrations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    competition_id uuid NOT NULL,
+    club_id uuid NOT NULL,
+    player_id uuid NOT NULL,
+    shirt_number integer NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    registered_by uuid,
+    registered_at timestamp with time zone DEFAULT now(),
+    reviewed_by uuid,
+    reviewed_at timestamp with time zone,
+    rejection_reason text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT competition_player_registrations_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])))
 );
 
 
@@ -255,7 +282,12 @@ CREATE TABLE public.competitions (
     description text,
     status text DEFAULT 'upcoming'::text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    created_by uuid,
+    approval_status text DEFAULT 'approved'::text NOT NULL,
+    approved_by uuid,
+    approved_at timestamp with time zone,
+    rejection_reason text
 );
 
 
@@ -358,6 +390,27 @@ CREATE TABLE public.matches (
     weather_condition text,
     pitch_condition text,
     match_notes text
+);
+
+
+--
+-- Name: player_documents; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.player_documents (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    player_id uuid NOT NULL,
+    document_type text NOT NULL,
+    document_url text NOT NULL,
+    valid_from date,
+    valid_until date,
+    verified boolean DEFAULT false,
+    verified_by uuid,
+    verified_at timestamp with time zone,
+    rejection_reason text,
+    uploaded_by uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -660,6 +713,22 @@ ALTER TABLE ONLY public.clubs
 
 
 --
+-- Name: competition_player_registrations competition_player_registrations_competition_id_player_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competition_player_registrations
+    ADD CONSTRAINT competition_player_registrations_competition_id_player_id_key UNIQUE (competition_id, player_id);
+
+
+--
+-- Name: competition_player_registrations competition_player_registrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competition_player_registrations
+    ADD CONSTRAINT competition_player_registrations_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: competition_teams competition_teams_competition_id_club_id_key; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -713,6 +782,14 @@ ALTER TABLE ONLY public.match_statistics
 
 ALTER TABLE ONLY public.matches
     ADD CONSTRAINT matches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: player_documents player_documents_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.player_documents
+    ADD CONSTRAINT player_documents_pkey PRIMARY KEY (id);
 
 
 --
@@ -844,6 +921,20 @@ ALTER TABLE ONLY public.user_roles
 
 
 --
+-- Name: idx_competitions_approval_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_competitions_approval_status ON public.competitions USING btree (approval_status);
+
+
+--
+-- Name: idx_competitions_created_by; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_competitions_created_by ON public.competitions USING btree (created_by);
+
+
+--
 -- Name: idx_match_lineups_club_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -914,6 +1005,13 @@ CREATE TRIGGER update_clubs_updated_at BEFORE UPDATE ON public.clubs FOR EACH RO
 
 
 --
+-- Name: competition_player_registrations update_competition_player_registrations_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_competition_player_registrations_updated_at BEFORE UPDATE ON public.competition_player_registrations FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
 -- Name: competition_teams update_competition_teams_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -946,6 +1044,13 @@ CREATE TRIGGER update_match_statistics_updated_at BEFORE UPDATE ON public.match_
 --
 
 CREATE TRIGGER update_matches_updated_at BEFORE UPDATE ON public.matches FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+
+--
+-- Name: player_documents update_player_documents_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_player_documents_updated_at BEFORE UPDATE ON public.player_documents FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 
 --
@@ -1057,6 +1162,30 @@ ALTER TABLE ONLY public.club_staff
 
 
 --
+-- Name: competition_player_registrations competition_player_registrations_club_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competition_player_registrations
+    ADD CONSTRAINT competition_player_registrations_club_id_fkey FOREIGN KEY (club_id) REFERENCES public.clubs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: competition_player_registrations competition_player_registrations_competition_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competition_player_registrations
+    ADD CONSTRAINT competition_player_registrations_competition_id_fkey FOREIGN KEY (competition_id) REFERENCES public.competitions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: competition_player_registrations competition_player_registrations_player_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competition_player_registrations
+    ADD CONSTRAINT competition_player_registrations_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id) ON DELETE CASCADE;
+
+
+--
 -- Name: competition_teams competition_teams_club_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1070,6 +1199,14 @@ ALTER TABLE ONLY public.competition_teams
 
 ALTER TABLE ONLY public.competition_teams
     ADD CONSTRAINT competition_teams_competition_id_fkey FOREIGN KEY (competition_id) REFERENCES public.competitions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: competitions competitions_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.competitions
+    ADD CONSTRAINT competitions_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id);
 
 
 --
@@ -1166,6 +1303,14 @@ ALTER TABLE ONLY public.matches
 
 ALTER TABLE ONLY public.matches
     ADD CONSTRAINT matches_home_club_id_fkey FOREIGN KEY (home_club_id) REFERENCES public.clubs(id);
+
+
+--
+-- Name: player_documents player_documents_player_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.player_documents
+    ADD CONSTRAINT player_documents_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id) ON DELETE CASCADE;
 
 
 --
@@ -1384,6 +1529,20 @@ CREATE POLICY "Admin federasi can insert profiles" ON public.profiles FOR INSERT
 
 
 --
+-- Name: player_documents Admin federasi can manage all player documents; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can manage all player documents" ON public.player_documents USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
+-- Name: competition_player_registrations Admin federasi can manage all registrations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can manage all registrations" ON public.competition_player_registrations USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
 -- Name: transfer_documents Admin federasi can manage all transfer documents; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1538,6 +1697,13 @@ CREATE POLICY "Admin federasi can update players and registration status" ON pub
 
 
 --
+-- Name: competitions Admin federasi can view all for approval; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admin federasi can view all for approval" ON public.competitions FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin_federasi'::public.app_role));
+
+
+--
 -- Name: profiles Admin federasi can view all profiles; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1643,6 +1809,13 @@ CREATE POLICY "Anyone can view players" ON public.players FOR SELECT TO authenti
 
 
 --
+-- Name: competition_player_registrations Anyone can view registrations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Anyone can view registrations" ON public.competition_player_registrations FOR SELECT USING (true);
+
+
+--
 -- Name: stadiums Anyone can view stadiums; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1705,12 +1878,30 @@ CREATE POLICY "Club admin can manage their staff" ON public.club_staff TO authen
 
 
 --
+-- Name: competition_player_registrations Club admin can register players; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can register players" ON public.competition_player_registrations FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM public.user_roles
+  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = competition_player_registrations.club_id)))));
+
+
+--
 -- Name: players Club admin can register players; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Club admin can register players" ON public.players FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
    FROM public.user_roles
   WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = players.current_club_id)))));
+
+
+--
+-- Name: competition_player_registrations Club admin can update pending registrations; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can update pending registrations" ON public.competition_player_registrations FOR UPDATE USING ((((EXISTS ( SELECT 1
+   FROM public.user_roles
+  WHERE ((user_roles.user_id = auth.uid()) AND (user_roles.role = 'admin_klub'::public.app_role) AND (user_roles.club_id = competition_player_registrations.club_id)))) AND (status = 'pending'::text)) OR public.has_role(auth.uid(), 'admin_federasi'::public.app_role)));
 
 
 --
@@ -1750,6 +1941,26 @@ CREATE POLICY "Club admin can update their transfers" ON public.player_transfers
 
 
 --
+-- Name: player_documents Club admin can update unverified documents; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can update unverified documents" ON public.player_documents FOR UPDATE USING (((verified = false) AND (EXISTS ( SELECT 1
+   FROM (public.user_roles ur
+     JOIN public.players p ON ((p.id = player_documents.player_id)))
+  WHERE ((ur.user_id = auth.uid()) AND (ur.role = 'admin_klub'::public.app_role) AND (ur.club_id = p.current_club_id))))));
+
+
+--
+-- Name: player_documents Club admin can upload documents for their players; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can upload documents for their players" ON public.player_documents FOR INSERT WITH CHECK ((EXISTS ( SELECT 1
+   FROM (public.user_roles ur
+     JOIN public.players p ON ((p.id = player_documents.player_id)))
+  WHERE ((ur.user_id = auth.uid()) AND (ur.role = 'admin_klub'::public.app_role) AND (ur.club_id = p.current_club_id)))));
+
+
+--
 -- Name: transfer_documents Club admin can upload documents for their transfers; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -1757,6 +1968,16 @@ CREATE POLICY "Club admin can upload documents for their transfers" ON public.tr
    FROM (public.player_transfers pt
      JOIN public.user_roles ur ON ((ur.user_id = auth.uid())))
   WHERE ((pt.id = transfer_documents.transfer_id) AND (ur.role = 'admin_klub'::public.app_role) AND ((ur.club_id = pt.from_club_id) OR (ur.club_id = pt.to_club_id))))));
+
+
+--
+-- Name: player_documents Club admin can view documents for their players; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Club admin can view documents for their players" ON public.player_documents FOR SELECT USING (((EXISTS ( SELECT 1
+   FROM (public.user_roles ur
+     JOIN public.players p ON ((p.id = player_documents.player_id)))
+  WHERE ((ur.user_id = auth.uid()) AND (ur.role = 'admin_klub'::public.app_role) AND (ur.club_id = p.current_club_id)))) OR public.has_role(auth.uid(), 'admin_federasi'::public.app_role)));
 
 
 --
@@ -1779,17 +2000,17 @@ CREATE POLICY "Club admin can view their club's approved players or their regi" 
 
 
 --
+-- Name: competitions Panitia can create competitions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can create competitions" ON public.competitions FOR INSERT TO authenticated WITH CHECK (public.has_role(auth.uid(), 'panitia'::public.app_role));
+
+
+--
 -- Name: competition_teams Panitia can manage competition teams; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Panitia can manage competition teams" ON public.competition_teams TO authenticated USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
-
-
---
--- Name: competitions Panitia can manage competitions; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Panitia can manage competitions" ON public.competitions TO authenticated USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
 
 
 --
@@ -1821,10 +2042,33 @@ CREATE POLICY "Panitia can manage matches" ON public.matches TO authenticated US
 
 
 --
+-- Name: matches Panitia can manage matches in approved competitions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can manage matches in approved competitions" ON public.matches TO authenticated USING ((public.has_role(auth.uid(), 'panitia'::public.app_role) AND (EXISTS ( SELECT 1
+   FROM public.competitions
+  WHERE ((competitions.id = matches.competition_id) AND (competitions.created_by = auth.uid()) AND (competitions.approval_status = 'approved'::text))))));
+
+
+--
 -- Name: standings Panitia can manage standings; Type: POLICY; Schema: public; Owner: -
 --
 
 CREATE POLICY "Panitia can manage standings" ON public.standings TO authenticated USING (public.has_role(auth.uid(), 'panitia'::public.app_role));
+
+
+--
+-- Name: competitions Panitia can update own pending competitions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can update own pending competitions" ON public.competitions FOR UPDATE TO authenticated USING ((public.has_role(auth.uid(), 'panitia'::public.app_role) AND (created_by = auth.uid()) AND (approval_status = ANY (ARRAY['pending'::text, 'rejected'::text]))));
+
+
+--
+-- Name: competitions Panitia can view own competitions; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Panitia can view own competitions" ON public.competitions FOR SELECT TO authenticated USING ((public.has_role(auth.uid(), 'panitia'::public.app_role) AND (created_by = auth.uid())));
 
 
 --
@@ -1888,6 +2132,12 @@ ALTER TABLE public.club_staff ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.clubs ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: competition_player_registrations; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.competition_player_registrations ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: competition_teams; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -1922,6 +2172,12 @@ ALTER TABLE public.match_statistics ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: player_documents; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.player_documents ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: player_history; Type: ROW SECURITY; Schema: public; Owner: -
