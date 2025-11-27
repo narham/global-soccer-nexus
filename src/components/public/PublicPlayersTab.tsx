@@ -49,7 +49,7 @@ export const PublicPlayersTab = () => {
         .from("player_statistics")
         .select(`
           *,
-          player:players(id, full_name, photo_url, position, current_club:clubs(name, logo_url))
+          player:players_public(id, full_name, photo_url, position, current_club:clubs(name, logo_url))
         `)
         .order("goals", { ascending: false })
         .limit(50);

@@ -242,6 +242,13 @@ export type Database = {
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "competition_player_registrations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       competition_teams: {
@@ -424,10 +431,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "match_events_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "match_events_player_out_id_fkey"
             columns: ["player_out_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_events_player_out_id_fkey"
+            columns: ["player_out_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -495,6 +516,13 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_lineups_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -740,6 +768,13 @@ export type Database = {
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "player_documents_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       player_history: {
@@ -786,6 +821,13 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_history_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -839,6 +881,13 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_statistics_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["id"]
           },
         ]
@@ -941,6 +990,13 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_transfers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["id"]
           },
           {
@@ -1341,6 +1397,13 @@ export type Database = {
             referencedRelation: "player_transfers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transfer_approvals_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "player_transfers_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       transfer_documents: {
@@ -1389,6 +1452,13 @@ export type Database = {
             columns: ["transfer_id"]
             isOneToOne: false
             referencedRelation: "player_transfers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_documents_transfer_id_fkey"
+            columns: ["transfer_id"]
+            isOneToOne: false
+            referencedRelation: "player_transfers_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1455,7 +1525,217 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      club_staff_public: {
+        Row: {
+          club_id: string | null
+          created_at: string | null
+          id: string | null
+          joined_date: string | null
+          name: string | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          club_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          joined_date?: string | null
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          club_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          joined_date?: string | null
+          name?: string | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "club_staff_club_id_fkey"
+            columns: ["club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_transfers_public: {
+        Row: {
+          approved_at: string | null
+          contract_end: string | null
+          contract_start: string | null
+          created_at: string | null
+          from_club_id: string | null
+          id: string | null
+          itc_approved_date: string | null
+          itc_request_date: string | null
+          itc_status: string | null
+          loan_end_date: string | null
+          player_id: string | null
+          requires_itc: boolean | null
+          status: string | null
+          to_club_id: string | null
+          transfer_type: string | null
+          transfer_window_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string | null
+          from_club_id?: string | null
+          id?: string | null
+          itc_approved_date?: string | null
+          itc_request_date?: string | null
+          itc_status?: string | null
+          loan_end_date?: string | null
+          player_id?: string | null
+          requires_itc?: boolean | null
+          status?: string | null
+          to_club_id?: string | null
+          transfer_type?: string | null
+          transfer_window_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string | null
+          from_club_id?: string | null
+          id?: string | null
+          itc_approved_date?: string | null
+          itc_request_date?: string | null
+          itc_status?: string | null
+          loan_end_date?: string | null
+          player_id?: string | null
+          requires_itc?: boolean | null
+          status?: string | null
+          to_club_id?: string | null
+          transfer_type?: string | null
+          transfer_window_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_transfers_from_club_id_fkey"
+            columns: ["from_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_transfers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_transfers_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_transfers_to_club_id_fkey"
+            columns: ["to_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "player_transfers_transfer_window_id_fkey"
+            columns: ["transfer_window_id"]
+            isOneToOne: false
+            referencedRelation: "transfer_windows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players_public: {
+        Row: {
+          contract_end: string | null
+          contract_start: string | null
+          created_at: string | null
+          current_club_id: string | null
+          date_of_birth: string | null
+          full_name: string | null
+          height_cm: number | null
+          id: string | null
+          injury_status: Database["public"]["Enums"]["player_status"] | null
+          market_value: number | null
+          nationality: string | null
+          photo_url: string | null
+          place_of_birth: string | null
+          position: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot: string | null
+          registration_status: string | null
+          shirt_number: number | null
+          transfer_status: string | null
+          updated_at: string | null
+          weight_kg: number | null
+        }
+        Insert: {
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string | null
+          current_club_id?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          height_cm?: number | null
+          id?: string | null
+          injury_status?: Database["public"]["Enums"]["player_status"] | null
+          market_value?: number | null
+          nationality?: string | null
+          photo_url?: string | null
+          place_of_birth?: string | null
+          position?: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot?: string | null
+          registration_status?: string | null
+          shirt_number?: number | null
+          transfer_status?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Update: {
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string | null
+          current_club_id?: string | null
+          date_of_birth?: string | null
+          full_name?: string | null
+          height_cm?: number | null
+          id?: string | null
+          injury_status?: Database["public"]["Enums"]["player_status"] | null
+          market_value?: number | null
+          nationality?: string | null
+          photo_url?: string | null
+          place_of_birth?: string | null
+          position?: Database["public"]["Enums"]["player_position"] | null
+          preferred_foot?: string | null
+          registration_status?: string | null
+          shirt_number?: number | null
+          transfer_status?: string | null
+          updated_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_current_club_id_fkey"
+            columns: ["current_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {

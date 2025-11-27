@@ -24,9 +24,9 @@ export default function PublicPlayerDetailPage() {
   const fetchPlayerDetails = async () => {
     setLoading(true);
 
-    // Fetch player info
+    // Fetch player info (using public view to exclude NIK)
     const { data: playerData } = await supabase
-      .from("players")
+      .from("players_public")
       .select("*")
       .eq("id", id)
       .single();

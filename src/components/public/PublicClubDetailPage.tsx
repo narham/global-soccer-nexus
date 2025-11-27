@@ -32,12 +32,11 @@ export default function PublicClubDetailPage() {
       .eq("id", id)
       .single();
 
-    // Fetch players
+    // Fetch players (using public view to exclude NIK)
     const { data: playersData } = await supabase
-      .from("players")
+      .from("players_public")
       .select("*")
       .eq("current_club_id", id)
-      .eq("registration_status", "approved")
       .order("position", { ascending: true });
 
     // Fetch recent matches
