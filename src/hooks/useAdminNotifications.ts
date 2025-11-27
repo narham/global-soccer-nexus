@@ -148,12 +148,53 @@ export function useAdminNotifications() {
       )
       .subscribe();
 
+    const transfersChannel = supabase
+      .channel('transfers-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'player_transfers',
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const transfer = payload.new;
+            let title = '';
+            let description = '';
+            
+            if (payload.eventType === 'INSERT') {
+              title = 'Transfer Pemain Baru';
+              description = 'Ada pengajuan transfer baru yang perlu ditinjau';
+            } else if (transfer.status === 'pending') {
+              title = 'Transfer Menunggu Approval';
+              description = 'Ada transfer yang menunggu persetujuan';
+            }
+
+            if (title) {
+              const newNotif: Notification = {
+                id: transfer.id,
+                type: 'transfer',
+                title,
+                description,
+                createdAt: transfer.created_at,
+                data: transfer
+              };
+              setNotifications(prev => [newNotif, ...prev]);
+              setUnreadCount(prev => prev + 1);
+            }
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       supabase.removeChannel(competitionsChannel);
       supabase.removeChannel(playerRegsChannel);
       supabase.removeChannel(roleRequestsChannel);
       supabase.removeChannel(playersChannel);
       supabase.removeChannel(playerDocsChannel);
+      supabase.removeChannel(transfersChannel);
     };
   }, [isAdminFederasi]);
 
@@ -257,6 +298,26 @@ export function useAdminNotifications() {
             description: `${doc.document_type} - ${(doc.players as any)?.full_name}`,
             createdAt: doc.created_at,
             data: doc
+          });
+        });
+      }
+
+      // Fetch pending transfers
+      const { data: transfers } = await supabase
+        .from('player_transfers')
+        .select('*, players(full_name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (transfers) {
+        transfers.forEach(transfer => {
+          allNotifications.push({
+            id: transfer.id,
+            type: 'transfer',
+            title: 'Transfer Pending',
+            description: `Transfer ${(transfer.players as any)?.full_name}`,
+            createdAt: transfer.created_at,
+            data: transfer
           });
         });
       }

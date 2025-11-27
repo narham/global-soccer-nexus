@@ -27,6 +27,7 @@ import Matches from "./pages/Matches";
 import MatchDetail from "./pages/MatchDetail";
 import Transfers from "./pages/Transfers";
 import TransferDetail from "./pages/TransferDetail";
+import TransferWindows from "./pages/TransferWindows";
 import Stadiums from "./pages/Stadiums";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
@@ -76,6 +77,7 @@ const App = () => (
           <Route path="/matches/:id" element={<Layout><MatchDetail /></Layout>} />
           <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
           <Route path="/transfers/:id" element={<Layout><TransferDetail /></Layout>} />
+          <Route path="/transfer-windows" element={<Layout><TransferWindows /></Layout>} />
           <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
           <Route path="/users" element={<Layout><Users /></Layout>} />
           

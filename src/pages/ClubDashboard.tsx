@@ -22,6 +22,7 @@ const ClubDashboard = () => {
     recentMatches: [] as any[],
     contractExpiringSoon: 0,
     standings: null as any,
+    pendingTransfers: 0,
   });
 
   useEffect(() => {
@@ -30,7 +31,7 @@ const ClubDashboard = () => {
         setLoading(true);
 
         // Fetch all data in parallel
-        const [playersRes, staffRes, docsRes, matchesRes, standingsRes] = await Promise.all([
+        const [playersRes, staffRes, docsRes, matchesRes, standingsRes, transfersRes] = await Promise.all([
           supabase.from("players").select("*", { count: "exact", head: true }).eq("current_club_id", id),
           supabase.from("club_staff").select("*", { count: "exact", head: true }).eq("club_id", id),
           supabase.from("club_documents").select("*", { count: "exact", head: true }).eq("club_id", id),
@@ -55,6 +56,11 @@ const ClubDashboard = () => {
             .order("created_at", { ascending: false })
             .limit(1)
             .single(),
+          supabase
+            .from("player_transfers")
+            .select("*", { count: "exact", head: true })
+            .or(`from_club_id.eq.${id},to_club_id.eq.${id}`)
+            .in("status", ["pending", "pending_club_from", "pending_club_to", "pending_federation"]),
         ]);
 
         // Count players with expiring contracts (within 6 months)
@@ -83,6 +89,7 @@ const ClubDashboard = () => {
           recentMatches: recent,
           contractExpiringSoon: expiringCount || 0,
           standings: standingsRes.data,
+          pendingTransfers: transfersRes.count || 0,
         });
       } catch (error: any) {
         toast.error(error.message);
@@ -183,6 +190,18 @@ const ClubDashboard = () => {
             <strong>{stats.contractExpiringSoon} pemain</strong> memiliki kontrak yang akan berakhir dalam 6 bulan.{" "}
             <Button variant="link" className="p-0 h-auto" onClick={() => navigate(`/clubs/${id}/players`)}>
               Lihat detail
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {stats.pendingTransfers > 0 && (
+        <Alert className="border-amber-200 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertDescription className="text-amber-800">
+            <strong>{stats.pendingTransfers} transfer</strong> menunggu persetujuan.{" "}
+            <Button variant="link" className="p-0 h-auto text-amber-600" onClick={() => navigate(`/transfers`)}>
+              Lihat transfer
             </Button>
           </AlertDescription>
         </Alert>
