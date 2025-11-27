@@ -42,6 +42,7 @@ const menuItems = [
 ];
 
 const adminMenuItems = [
+  { title: "Transfer Windows", url: "/transfer-windows", icon: Calendar },
   { title: "Pengguna", url: "/users", icon: UserCog },
 ];
 

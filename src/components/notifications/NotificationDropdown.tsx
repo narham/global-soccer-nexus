@@ -36,6 +36,9 @@ export function NotificationDropdown() {
       case 'player_document':
         navigate(`/players/${notification.data.player_id}`);
         break;
+      case 'transfer':
+        navigate(`/transfers/${notification.data.id}`);
+        break;
     }
     clearNotification(notification.id);
   };
