@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trophy, Users, Shield, Calendar, TrendingUp, UserCheck, FileText, Clock } from "lucide-react";
+import { Trophy, Users, Shield, Calendar, TrendingUp, UserCheck, FileText, Clock, CheckCircle2 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { RoleRequestForm } from "@/components/users/RoleRequestForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,21 @@ interface Stats {
   pendingPlayers: number;
   pendingTransfers: number;
   pendingRoleRequests: number;
+  pendingCompetitions: number;
+  pendingRegistrations: number;
+  pendingDocuments: number;
+}
+
+interface CompetitionStats {
+  byStatus: { status: string; count: number }[];
+  byFormat: { format: string; count: number }[];
+}
+
+interface MonthlyActivity {
+  month: string;
+  players: number;
+  transfers: number;
+  competitions: number;
 }
 
 interface RecentActivity {
@@ -39,11 +54,19 @@ const Index = () => {
     pendingPlayers: 0,
     pendingTransfers: 0,
     pendingRoleRequests: 0,
+    pendingCompetitions: 0,
+    pendingRegistrations: 0,
+    pendingDocuments: 0,
   });
   const [loading, setLoading] = useState(true);
   const [chartData, setChartData] = useState<any[]>([]);
   const [transferData, setTransferData] = useState<any[]>([]);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [competitionStats, setCompetitionStats] = useState<CompetitionStats>({
+    byStatus: [],
+    byFormat: []
+  });
+  const [monthlyActivity, setMonthlyActivity] = useState<MonthlyActivity[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -55,7 +78,10 @@ const Index = () => {
           matchesData,
           pendingPlayersData,
           pendingTransfersData,
-          pendingRoleRequestsData
+          pendingRoleRequestsData,
+          pendingCompetitionsData,
+          pendingRegistrationsData,
+          pendingDocumentsData
         ] = await Promise.all([
           supabase.from("clubs").select("*", { count: "exact", head: true }),
           supabase.from("players").select("*", { count: "exact", head: true }),
@@ -64,6 +90,9 @@ const Index = () => {
           supabase.from("players").select("*", { count: "exact", head: true }).eq("registration_status", "pending"),
           supabase.from("player_transfers").select("*", { count: "exact", head: true }).eq("status", "pending"),
           supabase.from("role_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("competitions").select("*", { count: "exact", head: true }).eq("approval_status", "pending"),
+          supabase.from("competition_player_registrations").select("*", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("player_documents").select("*", { count: "exact", head: true }).eq("verified", false),
         ]);
 
         setStats({
@@ -74,6 +103,9 @@ const Index = () => {
           pendingPlayers: pendingPlayersData.count || 0,
           pendingTransfers: pendingTransfersData.count || 0,
           pendingRoleRequests: pendingRoleRequestsData.count || 0,
+          pendingCompetitions: pendingCompetitionsData.count || 0,
+          pendingRegistrations: pendingRegistrationsData.count || 0,
+          pendingDocuments: pendingDocumentsData.count || 0,
         });
 
         // Fetch player registration trends (last 6 months)
@@ -119,6 +151,87 @@ const Index = () => {
           value: count,
         }));
         setTransferData(transferDataFormatted);
+
+        // Fetch competition statistics by status and format (for admin_federasi)
+        if (role === 'admin_federasi') {
+          const { data: allCompetitions } = await supabase
+            .from("competitions")
+            .select("approval_status, format");
+
+          const statusStats: { [key: string]: number } = {};
+          const formatStats: { [key: string]: number } = {};
+
+          allCompetitions?.forEach((c) => {
+            statusStats[c.approval_status] = (statusStats[c.approval_status] || 0) + 1;
+            formatStats[c.format] = (formatStats[c.format] || 0) + 1;
+          });
+
+          setCompetitionStats({
+            byStatus: Object.entries(statusStats).map(([status, count]) => ({
+              status: status === 'pending' ? 'Pending' : status === 'approved' ? 'Disetujui' : 'Ditolak',
+              count,
+            })),
+            byFormat: Object.entries(formatStats).map(([format, count]) => ({
+              format: format === 'league' ? 'Liga' : format === 'cup' ? 'Piala' : 'Grup',
+              count,
+            })),
+          });
+
+          // Fetch monthly activity for players, transfers, and competitions (last 6 months)
+          const monthlyData: { [key: string]: { players: number; transfers: number; competitions: number } } = {};
+          for (let i = 5; i >= 0; i--) {
+            const date = subMonths(new Date(), i);
+            const monthKey = format(date, "MMM yyyy");
+            monthlyData[monthKey] = { players: 0, transfers: 0, competitions: 0 };
+          }
+
+          // Count players
+          const { data: allPlayers } = await supabase
+            .from("players")
+            .select("created_at")
+            .gte("created_at", subMonths(new Date(), 6).toISOString());
+
+          allPlayers?.forEach((p) => {
+            const monthKey = format(new Date(p.created_at), "MMM yyyy");
+            if (monthlyData[monthKey]) {
+              monthlyData[monthKey].players++;
+            }
+          });
+
+          // Count transfers
+          const { data: allTransfers } = await supabase
+            .from("player_transfers")
+            .select("created_at")
+            .gte("created_at", subMonths(new Date(), 6).toISOString());
+
+          allTransfers?.forEach((t) => {
+            const monthKey = format(new Date(t.created_at), "MMM yyyy");
+            if (monthlyData[monthKey]) {
+              monthlyData[monthKey].transfers++;
+            }
+          });
+
+          // Count competitions
+          const { data: allComps } = await supabase
+            .from("competitions")
+            .select("created_at")
+            .gte("created_at", subMonths(new Date(), 6).toISOString());
+
+          allComps?.forEach((c) => {
+            const monthKey = format(new Date(c.created_at), "MMM yyyy");
+            if (monthlyData[monthKey]) {
+              monthlyData[monthKey].competitions++;
+            }
+          });
+
+          const monthlyActivityFormatted = Object.entries(monthlyData).map(([month, data]) => ({
+            month,
+            players: data.players,
+            transfers: data.transfers,
+            competitions: data.competitions,
+          }));
+          setMonthlyActivity(monthlyActivityFormatted);
+        }
 
         // Fetch recent activities
         const [recentPlayers, recentTransfers, recentCompetitions, recentMatches] = await Promise.all([
@@ -257,9 +370,12 @@ const Index = () => {
   ];
 
   const pendingCards = [
-    { title: "Pemain Pending", value: stats.pendingPlayers, icon: UserCheck, color: "text-warning", bgColor: "bg-warning/10" },
-    { title: "Transfer Pending", value: stats.pendingTransfers, icon: TrendingUp, color: "text-info", bgColor: "bg-info/10" },
-    { title: "Role Requests", value: stats.pendingRoleRequests, icon: FileText, color: "text-muted-foreground", bgColor: "bg-muted" },
+    { title: "Kompetisi Pending", value: stats.pendingCompetitions, icon: Trophy, color: "text-warning", bgColor: "bg-warning/10", href: "/competitions" },
+    { title: "Pemain Pending", value: stats.pendingPlayers, icon: UserCheck, color: "text-warning", bgColor: "bg-warning/10", href: "/players" },
+    { title: "Registrasi Pending", value: stats.pendingRegistrations, icon: FileText, color: "text-info", bgColor: "bg-info/10", href: "/competitions" },
+    { title: "Transfer Pending", value: stats.pendingTransfers, icon: TrendingUp, color: "text-info", bgColor: "bg-info/10", href: "/transfers" },
+    { title: "Role Requests", value: stats.pendingRoleRequests, icon: Users, color: "text-muted-foreground", bgColor: "bg-muted", href: "/users" },
+    { title: "Dokumen Pending", value: stats.pendingDocuments, icon: CheckCircle2, color: "text-warning", bgColor: "bg-warning/10", href: "/players" },
   ];
 
   const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--chart-1))', 'hsl(var(--chart-2))'];
@@ -320,11 +436,15 @@ const Index = () => {
 
           {/* Pending Approvals */}
           {role === 'admin_federasi' && (
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
               {pendingCards.map((stat) => (
-                <Card key={stat.title} className="transition-smooth hover:shadow-elegant border-border/50">
+                <Card 
+                  key={stat.title} 
+                  className="transition-smooth hover:shadow-elegant border-border/50 cursor-pointer"
+                  onClick={() => window.location.href = stat.href}
+                >
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+                    <CardTitle className="text-xs font-medium text-muted-foreground">{stat.title}</CardTitle>
                     <div className={`p-2 rounded-lg ${stat.bgColor}`}>
                       <stat.icon className={`h-4 w-4 ${stat.color}`} />
                     </div>
@@ -368,40 +488,135 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="transition-smooth hover:shadow-elegant">
-              <CardHeader>
-                <CardTitle>Statistik Transfer</CardTitle>
-                <CardDescription>Berdasarkan jenis transfer</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={transferData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="hsl(var(--primary))"
-                      dataKey="value"
-                    >
-                      {transferData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--popover))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+            {role === 'admin_federasi' && (
+              <Card className="transition-smooth hover:shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Aktivitas Kompetisi</CardTitle>
+                  <CardDescription>Berdasarkan status persetujuan</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={competitionStats.byStatus}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="status" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="count" fill="hsl(var(--primary))" name="Jumlah Kompetisi" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            {role !== 'admin_federasi' && (
+              <Card className="transition-smooth hover:shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Statistik Transfer</CardTitle>
+                  <CardDescription>Berdasarkan jenis transfer</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={transferData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="hsl(var(--primary))"
+                        dataKey="value"
+                      >
+                        {transferData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            )}
           </div>
+
+          {/* Additional Charts for Admin Federasi */}
+          {role === 'admin_federasi' && (
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card className="transition-smooth hover:shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Statistik Transfer</CardTitle>
+                  <CardDescription>Berdasarkan jenis transfer</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={transferData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="hsl(var(--primary))"
+                        dataKey="value"
+                      >
+                        {transferData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <Card className="transition-smooth hover:shadow-elegant">
+                <CardHeader>
+                  <CardTitle>Aktivitas Bulanan</CardTitle>
+                  <CardDescription>Perbandingan aktivitas 6 bulan terakhir</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={monthlyActivity}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                      <YAxis stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--popover))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="players" fill="hsl(var(--primary))" name="Pemain" />
+                      <Bar dataKey="transfers" fill="hsl(var(--accent))" name="Transfer" />
+                      <Bar dataKey="competitions" fill="hsl(var(--secondary))" name="Kompetisi" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Recent Activities */}
           <Card className="transition-smooth hover:shadow-elegant">
