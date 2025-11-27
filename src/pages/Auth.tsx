@@ -8,97 +8,99 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Trophy, ArrowLeft } from "lucide-react";
-
 const Auth = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       if (session) {
         navigate("/");
       }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: {
+        subscription
+      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/");
       }
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const {
+        error
+      } = await supabase.auth.signInWithPassword({
         email,
-        password,
+        password
       });
-
       if (error) throw error;
-
       toast({
         title: "Berhasil masuk!",
-        description: "Selamat datang kembali di sistem manajemen sepakbola.",
+        description: "Selamat datang kembali di sistem manajemen sepakbola."
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Gagal masuk",
-        description: error.message,
+        description: error.message
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const {
+        data,
+        error
+      } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            full_name: fullName,
+            full_name: fullName
           }
-        },
+        }
       });
-
       if (error) throw error;
 
       // Update profile with phone number after signup
       if (data.user) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .update({ 
-            full_name: fullName,
-            phone: phone 
-          })
-          .eq("id", data.user.id);
-
+        const {
+          error: profileError
+        } = await supabase.from("profiles").update({
+          full_name: fullName,
+          phone: phone
+        }).eq("id", data.user.id);
         if (profileError) {
           console.error("Error updating profile:", profileError);
         }
       }
-
       toast({
         title: "Akun berhasil dibuat!",
-        description: "Anda dapat masuk sekarang.",
+        description: "Anda dapat masuk sekarang."
       });
 
       // Clear form
@@ -110,21 +112,15 @@ const Auth = () => {
       toast({
         variant: "destructive",
         title: "Gagal mendaftar",
-        description: error.message,
+        description: error.message
       });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary-glow p-4">
+  return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-primary-glow p-4">
       <div className="w-full max-w-md">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate("/public")}
-          className="mb-4 text-white hover:bg-white/10"
-        >
+        <Button variant="ghost" onClick={() => navigate("/public")} className="mb-4 text-white hover:bg-white/10">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Kembali ke Portal Public
         </Button>
@@ -137,9 +133,7 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold">Sistem Manajemen Sepakbola</CardTitle>
-          <CardDescription>
-            Platform profesional untuk federasi, klub, dan pemain
-          </CardDescription>
+          <CardDescription>Platform profesional untuk Organisasi, klub, dan pemain</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -152,25 +146,11 @@ const Auth = () => {
               <form onSubmit={handleLogin} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="email-login">Email</Label>
-                  <Input
-                    id="email-login"
-                    type="email"
-                    placeholder="nama@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="email-login" type="email" placeholder="nama@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-login">Kata Sandi</Label>
-                  <Input
-                    id="password-login"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="password-login" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Masuk"}
@@ -182,48 +162,19 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullname-signup">Nama Lengkap <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="fullname-signup"
-                    type="text"
-                    placeholder="Nama lengkap Anda"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
+                  <Input id="fullname-signup" type="text" placeholder="Nama lengkap Anda" value={fullName} onChange={e => setFullName(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email-signup">Email <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="email-signup"
-                    type="email"
-                    placeholder="nama@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="email-signup" type="email" placeholder="nama@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone-signup">Nomor Telepon <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="phone-signup"
-                    type="tel"
-                    placeholder="08123456789"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
+                  <Input id="phone-signup" type="tel" placeholder="08123456789" value={phone} onChange={e => setPhone(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password-signup">Kata Sandi <span className="text-destructive">*</span></Label>
-                  <Input
-                    id="password-signup"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
+                  <Input id="password-signup" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Memproses..." : "Daftar"}
@@ -234,8 +185,6 @@ const Auth = () => {
         </CardContent>
       </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Auth;
