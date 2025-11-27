@@ -61,12 +61,12 @@ export const QuickAccessBar = () => {
 
         items = [
           {
-            title: "Kompetisi Review",
-            description: "Perlu persetujuan",
+            title: "Kompetisi",
+            description: `${pendingCompetitions || 0} kompetisi, ${pendingRegistrations || 0} registrasi`,
             icon: Trophy,
             href: "/competitions",
-            badge: pendingCompetitions || 0,
-            variant: pendingCompetitions ? 'default' : 'outline'
+            badge: (pendingCompetitions || 0) + (pendingRegistrations || 0),
+            variant: (pendingCompetitions || pendingRegistrations) ? 'default' : 'outline'
           },
           {
             title: "Pemain Review",
@@ -91,14 +91,6 @@ export const QuickAccessBar = () => {
             href: "/transfers",
             badge: pendingTransfers || 0,
             variant: pendingTransfers ? 'default' : 'outline'
-          },
-          {
-            title: "Registrasi Pemain",
-            description: "Review kompetisi",
-            icon: FileText,
-            href: "/competitions",
-            badge: pendingRegistrations || 0,
-            variant: pendingRegistrations ? 'default' : 'outline'
           }
         ];
       } else if (role === "admin_klub" && clubId) {
