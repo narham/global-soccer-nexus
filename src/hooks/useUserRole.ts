@@ -44,7 +44,7 @@ export function useUserRole(): UserRoleData {
           .from("user_roles")
           .select("role, club_id")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error("Error fetching user role:", error);
