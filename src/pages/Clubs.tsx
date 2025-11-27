@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ClubsTable } from "@/components/ClubsTable";
 import { ClubFormDialog } from "@/components/clubs/ClubFormDialog";
+import { DataImportDialog } from "@/components/import/DataImportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -25,6 +26,7 @@ const Clubs = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [formOpen, setFormOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const { toast } = useToast();
   const { isAdminKlub, clubId, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
@@ -90,10 +92,16 @@ const Clubs = () => {
           </p>
         </div>
         {!isAdminKlub && (
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Klub
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" />
+              Import Excel
+            </Button>
+            <Button onClick={() => setFormOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Tambah Klub
+            </Button>
+          </div>
         )}
       </div>
 
@@ -130,6 +138,13 @@ const Clubs = () => {
       <ClubFormDialog
         open={formOpen}
         onOpenChange={setFormOpen}
+        onSuccess={fetchClubs}
+      />
+
+      <DataImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        entityType="clubs"
         onSuccess={fetchClubs}
       />
     </div>
