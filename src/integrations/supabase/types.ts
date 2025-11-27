@@ -586,6 +586,114 @@ export type Database = {
           },
         ]
       }
+      match_officials: {
+        Row: {
+          confirmed: boolean | null
+          created_at: string | null
+          id: string
+          match_id: string
+          notes: string | null
+          referee_id: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          confirmed?: boolean | null
+          created_at?: string | null
+          id?: string
+          match_id: string
+          notes?: string | null
+          referee_id: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          confirmed?: boolean | null
+          created_at?: string | null
+          id?: string
+          match_id?: string
+          notes?: string | null
+          referee_id?: string
+          role?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_officials_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_officials_referee_id_fkey"
+            columns: ["referee_id"]
+            isOneToOne: false
+            referencedRelation: "referees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_reports: {
+        Row: {
+          attendance_estimate: number | null
+          created_at: string | null
+          discipline_summary: string | null
+          id: string
+          incidents: Json | null
+          match_id: string
+          pitch_quality: string | null
+          referee_id: string
+          report_content: string | null
+          submitted_at: string | null
+          updated_at: string | null
+          weather_notes: string | null
+        }
+        Insert: {
+          attendance_estimate?: number | null
+          created_at?: string | null
+          discipline_summary?: string | null
+          id?: string
+          incidents?: Json | null
+          match_id: string
+          pitch_quality?: string | null
+          referee_id: string
+          report_content?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          weather_notes?: string | null
+        }
+        Update: {
+          attendance_estimate?: number | null
+          created_at?: string | null
+          discipline_summary?: string | null
+          id?: string
+          incidents?: Json | null
+          match_id?: string
+          pitch_quality?: string | null
+          referee_id?: string
+          report_content?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          weather_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_reports_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_reports_referee_id_fkey"
+            columns: ["referee_id"]
+            isOneToOne: false
+            referencedRelation: "referees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_statistics: {
         Row: {
           clearances: number | null
@@ -1202,6 +1310,57 @@ export type Database = {
           id?: string
           phone?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      referees: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          experience_years: number | null
+          full_name: string
+          id: string
+          license_number: string | null
+          license_type: string
+          license_valid_until: string | null
+          phone: string | null
+          photo_url: string | null
+          specialization: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          license_number?: string | null
+          license_type?: string
+          license_valid_until?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          specialization?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          license_number?: string | null
+          license_type?: string
+          license_valid_until?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          specialization?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
