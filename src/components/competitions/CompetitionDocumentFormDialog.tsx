@@ -5,6 +5,7 @@ import * as z from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -143,6 +144,9 @@ export function CompetitionDocumentFormDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Tambah Dokumen Kompetisi</DialogTitle>
+          <DialogDescription>
+            Upload dokumen resmi kompetisi seperti surat izin penyelenggaraan, dokumen keamanan, dan anggaran dana sesuai regulasi AFC/FIFA
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

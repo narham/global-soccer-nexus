@@ -48,6 +48,11 @@ const adminMenuItems = [
   { title: "Pengguna", url: "/users", icon: UserCog },
 ];
 
+const wasitMenuItems = [
+  { title: "Dashboard", url: "/referees/dashboard", icon: LayoutDashboard },
+  { title: "Penugasan", url: "/referees", icon: Shield },
+];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
@@ -163,6 +168,28 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <NavLink to={item.url} end className="flex items-center gap-2">
+                        <item.icon className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+        
+        {isWasit && (
+          <SidebarGroup>
+            <SidebarGroupLabel className={collapsed ? "text-center px-0" : ""}>
+              {collapsed ? "⚽" : "Wasit"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {wasitMenuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink to={item.url} end className="flex items-center gap-2">
