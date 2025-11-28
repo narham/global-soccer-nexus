@@ -31,6 +31,7 @@ import TransferWindows from "./pages/TransferWindows";
 import Stadiums from "./pages/Stadiums";
 import Users from "./pages/Users";
 import Referees from "./pages/Referees";
+import RefereesDashboard from "./pages/RefereesDashboard";
 import NotFound from "./pages/NotFound";
 import PanitiaDashboard from "./pages/panitia/PanitiaDashboard";
 import PanitiaCompetitionsPage from "./pages/panitia/PanitiaCompetitionsPage";
@@ -81,6 +82,7 @@ const App = () => (
           <Route path="/transfer-windows" element={<Layout><TransferWindows /></Layout>} />
           <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
           <Route path="/referees" element={<Layout><Referees /></Layout>} />
+          <Route path="/referees/dashboard" element={<Layout><RefereesDashboard /></Layout>} />
           <Route path="/users" element={<Layout><Users /></Layout>} />
           
           {/* Panitia Routes */}

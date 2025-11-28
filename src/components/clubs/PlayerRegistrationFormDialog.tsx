@@ -5,6 +5,7 @@ import * as z from "zod";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -165,6 +166,9 @@ export default function PlayerRegistrationFormDialog({
           <DialogTitle>
             {registration ? "Edit" : "Daftarkan"} Pemain
           </DialogTitle>
+          <DialogDescription>
+            Daftarkan pemain klub ke kompetisi dengan nomor punggung yang ditentukan
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
