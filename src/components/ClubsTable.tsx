@@ -14,6 +14,7 @@ import { TableActions } from "./TableActions";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { MobileTableCard, MobileTableRow } from "@/components/ui/mobile-table-card";
 
 interface Club {
   id: string;
@@ -91,7 +92,8 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -153,18 +155,73 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {currentClubs.length === 0 ? (
+          <MobileTableCard>
+            <div className="text-center py-4 text-muted-foreground">
+              Tidak ada data klub
+            </div>
+          </MobileTableCard>
+        ) : (
+          currentClubs.map((club, index) => (
+            <MobileTableCard key={club.id} onClick={() => handleView(club)}>
+              <div className="flex items-start gap-3 mb-3">
+                <Shield className="h-12 w-12 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-base truncate">{club.name}</h3>
+                  {club.short_name && (
+                    <p className="text-sm text-muted-foreground">{club.short_name}</p>
+                  )}
+                  <Badge variant={getLicenseColor(club.license_status)} className="mt-1">
+                    {getLicenseLabel(club.license_status)}
+                  </Badge>
+                </div>
+              </div>
+              <div className="space-y-0 border-t pt-2">
+                <MobileTableRow label="Kota" value={club.city || "—"} />
+                <MobileTableRow label="Stadion" value={club.stadium_name || "—"} />
+                {club.founded_year && (
+                  <MobileTableRow label="Tahun Berdiri" value={club.founded_year} />
+                )}
+              </div>
+              <div className="flex gap-2 mt-3 pt-3 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 min-h-[44px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleView(club);
+                  }}
+                >
+                  <Eye className="w-4 h-4 mr-1" />
+                  Lihat
+                </Button>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <TableActions
+                    onDelete={() => handleDelete(club)}
+                    itemName={club.name}
+                  />
+                </div>
+              </div>
+            </MobileTableCard>
+          ))
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-sm text-muted-foreground">
           Menampilkan {startIndex + 1}-{Math.min(endIndex, clubs.length)} dari {clubs.length} klub
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-2">
           <select
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm min-h-[44px] md:min-h-0"
           >
             <option value={10}>10 / halaman</option>
             <option value={25}>25 / halaman</option>
@@ -176,6 +233,7 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Awal
             </Button>
@@ -184,10 +242,11 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Prev
             </Button>
-            <div className="flex items-center px-3 text-sm">
+            <div className="flex items-center px-3 text-sm min-h-[44px] md:min-h-0">
               {currentPage} / {totalPages}
             </div>
             <Button
@@ -195,6 +254,7 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Next
             </Button>
@@ -203,6 +263,7 @@ export const ClubsTable = ({ clubs, onRefresh }: ClubsTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Akhir
             </Button>

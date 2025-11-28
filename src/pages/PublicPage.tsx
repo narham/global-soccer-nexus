@@ -1,13 +1,35 @@
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PublicNav } from "@/components/public/PublicNav";
 import { PublicStandingsTab } from "@/components/public/PublicStandingsTab";
 import { PublicMatchesTab } from "@/components/public/PublicMatchesTab";
 import { PublicPlayersTab } from "@/components/public/PublicPlayersTab";
 import { Trophy, Calendar, Users, Zap } from "lucide-react";
+import { useSwipeableTabs } from "@/hooks/useSwipeGesture";
 
 export default function PublicPage() {
+  const [currentTab, setCurrentTab] = useState(0);
+  const tabs = ["live", "standings", "matches", "players"];
+
+  const swipeHandlers = useSwipeableTabs(tabs.length, currentTab, setCurrentTab);
+
+  useEffect(() => {
+    const element = document.getElementById("public-tabs");
+    if (!element) return;
+
+    element.addEventListener("touchstart", swipeHandlers.handleTouchStart as any);
+    element.addEventListener("touchmove", swipeHandlers.handleTouchMove as any);
+    element.addEventListener("touchend", swipeHandlers.handleTouchEnd as any);
+
+    return () => {
+      element.removeEventListener("touchstart", swipeHandlers.handleTouchStart as any);
+      element.removeEventListener("touchmove", swipeHandlers.handleTouchMove as any);
+      element.removeEventListener("touchend", swipeHandlers.handleTouchEnd as any);
+    };
+  }, [currentTab]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       <PublicNav />
       
       <div className="container mx-auto px-4 py-8">
@@ -18,7 +40,7 @@ export default function PublicPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="live" className="space-y-6">
+        <Tabs value={tabs[currentTab]} onValueChange={(v) => setCurrentTab(tabs.indexOf(v))} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
             <TabsTrigger value="live" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
@@ -38,7 +60,8 @@ export default function PublicPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="live" className="space-y-4">
+          <div id="public-tabs" className="touch-pan-y">
+            <TabsContent value="live" className="space-y-4">
             <PublicMatchesTab />
           </TabsContent>
 
@@ -50,9 +73,10 @@ export default function PublicPage() {
             <PublicMatchesTab />
           </TabsContent>
 
-          <TabsContent value="players" className="space-y-4">
-            <PublicPlayersTab />
-          </TabsContent>
+            <TabsContent value="players" className="space-y-4">
+              <PublicPlayersTab />
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </div>
