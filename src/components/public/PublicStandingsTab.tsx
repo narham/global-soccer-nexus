@@ -6,7 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trophy, ExternalLink } from "lucide-react";
 
 export const PublicStandingsTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -91,7 +92,7 @@ export const PublicStandingsTab = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-primary" />
@@ -99,18 +100,32 @@ export const PublicStandingsTab = () => {
               </CardTitle>
               <CardDescription>Lihat klasemen dan statistik tim</CardDescription>
             </div>
-            <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-              <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Pilih kompetisi" />
-              </SelectTrigger>
-              <SelectContent>
-                {competitions.map((comp) => (
-                  <SelectItem key={comp.id} value={comp.id}>
-                    {comp.name} ({comp.season})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+                <SelectTrigger className="w-[300px]">
+                  <SelectValue placeholder="Pilih kompetisi" />
+                </SelectTrigger>
+                <SelectContent>
+                  {competitions.map((comp) => (
+                    <SelectItem key={comp.id} value={comp.id}>
+                      {comp.name} ({comp.season})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedCompetition && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                >
+                  <Link to={`/public/competitions/${selectedCompetition}`}>
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    Detail
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
