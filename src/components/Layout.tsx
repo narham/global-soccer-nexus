@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { Session } from "@supabase/supabase-js";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { CommandPalette } from "@/components/navigation/CommandPalette";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { useUserRole } from "@/hooks/useUserRole";
 
 interface LayoutProps {
@@ -76,10 +77,11 @@ export function Layout({ children }: LayoutProps) {
               {isAdminFederasi && <NotificationDropdown />}
             </div>
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-6 pb-20 md:pb-6">
             {children}
           </main>
         </div>
+        <MobileBottomNav />
       </div>
     </SidebarProvider>
   );

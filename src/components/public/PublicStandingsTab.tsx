@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Trophy, ExternalLink } from "lucide-react";
+import { Trophy, ExternalLink, RefreshCw } from "lucide-react";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { MobileTableCard, MobileTableRow } from "@/components/ui/mobile-table-card";
 
 export const PublicStandingsTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -15,6 +17,33 @@ export const PublicStandingsTab = () => {
   const [standings, setStandings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStandings, setLoadingStandings] = useState(false);
+
+  const refreshData = async () => {
+    await fetchCompetitions();
+    if (selectedCompetition) {
+      await fetchStandings();
+    }
+  };
+
+  const { pullDistance, isRefreshing, handleTouchStart, handleTouchMove, handleTouchEnd } = usePullToRefresh({
+    onRefresh: refreshData,
+    threshold: 80,
+  });
+
+  useEffect(() => {
+    const element = document.getElementById("standings-container");
+    if (!element) return;
+
+    element.addEventListener("touchstart", handleTouchStart as any);
+    element.addEventListener("touchmove", handleTouchMove as any);
+    element.addEventListener("touchend", handleTouchEnd as any);
+
+    return () => {
+      element.removeEventListener("touchstart", handleTouchStart as any);
+      element.removeEventListener("touchmove", handleTouchMove as any);
+      element.removeEventListener("touchend", handleTouchEnd as any);
+    };
+  }, [selectedCompetition]);
 
   useEffect(() => {
     fetchCompetitions();
@@ -89,7 +118,19 @@ export const PublicStandingsTab = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <div id="standings-container" className="space-y-4 relative">
+      {/* Pull to refresh indicator */}
+      {pullDistance > 0 && (
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 z-50 transition-all"
+          style={{ transform: `translate(-50%, ${pullDistance}px)` }}
+        >
+          <div className="bg-primary text-primary-foreground rounded-full p-2">
+            <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </div>
+        </div>
+      )}
+      
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -163,55 +204,108 @@ export const PublicStandingsTab = () => {
               Klasemen belum tersedia untuk kompetisi ini
             </p>
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12">#</TableHead>
-                    <TableHead>Tim</TableHead>
-                    <TableHead className="text-center">Main</TableHead>
-                    <TableHead className="text-center">M</TableHead>
-                    <TableHead className="text-center">S</TableHead>
-                    <TableHead className="text-center">K</TableHead>
-                    <TableHead className="text-center">GM</TableHead>
-                    <TableHead className="text-center">GK</TableHead>
-                    <TableHead className="text-center">SG</TableHead>
-                    <TableHead className="text-center font-bold">Pts</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {standings.map((standing) => (
-                    <TableRow key={standing.id}>
-                      <TableCell className="font-medium">
-                        <Badge variant={standing.position <= 3 ? "default" : "outline"}>
-                          {standing.position || "-"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Link to={`/public/clubs/${standing.club.id}`} className="flex items-center gap-2 hover:opacity-80">
-                          {standing.club.logo_url && (
-                            <img 
-                              src={standing.club.logo_url} 
-                              alt={standing.club.name}
-                              className="h-6 w-6 object-contain"
-                            />
-                          )}
-                          <span className="font-medium">{standing.club.name}</span>
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-center">{standing.played}</TableCell>
-                      <TableCell className="text-center">{standing.won}</TableCell>
-                      <TableCell className="text-center">{standing.drawn}</TableCell>
-                      <TableCell className="text-center">{standing.lost}</TableCell>
-                      <TableCell className="text-center">{standing.goals_for}</TableCell>
-                      <TableCell className="text-center">{standing.goals_against}</TableCell>
-                      <TableCell className="text-center">{standing.goal_difference > 0 ? '+' : ''}{standing.goal_difference}</TableCell>
-                      <TableCell className="text-center font-bold">{standing.points}</TableCell>
+            <>
+              {/* Desktop Table */}
+              <div className="hidden md:block rounded-md border overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Tim</TableHead>
+                      <TableHead className="text-center">Main</TableHead>
+                      <TableHead className="text-center">M</TableHead>
+                      <TableHead className="text-center">S</TableHead>
+                      <TableHead className="text-center">K</TableHead>
+                      <TableHead className="text-center">GM</TableHead>
+                      <TableHead className="text-center">GK</TableHead>
+                      <TableHead className="text-center">SG</TableHead>
+                      <TableHead className="text-center font-bold">Pts</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {standings.map((standing) => (
+                      <TableRow key={standing.id}>
+                        <TableCell className="font-medium">
+                          <Badge variant={standing.position <= 3 ? "default" : "outline"}>
+                            {standing.position || "-"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Link to={`/public/clubs/${standing.club.id}`} className="flex items-center gap-2 hover:opacity-80">
+                            {standing.club.logo_url && (
+                              <img 
+                                src={standing.club.logo_url} 
+                                alt={standing.club.name}
+                                className="h-6 w-6 object-contain"
+                              />
+                            )}
+                            <span className="font-medium">{standing.club.name}</span>
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-center">{standing.played}</TableCell>
+                        <TableCell className="text-center">{standing.won}</TableCell>
+                        <TableCell className="text-center">{standing.drawn}</TableCell>
+                        <TableCell className="text-center">{standing.lost}</TableCell>
+                        <TableCell className="text-center">{standing.goals_for}</TableCell>
+                        <TableCell className="text-center">{standing.goals_against}</TableCell>
+                        <TableCell className="text-center">{standing.goal_difference > 0 ? '+' : ''}{standing.goal_difference}</TableCell>
+                        <TableCell className="text-center font-bold">{standing.points}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3">
+                {standings.map((standing, index) => (
+                  <MobileTableCard 
+                    key={standing.id}
+                    onClick={() => window.location.href = `/public/clubs/${standing.club.id}`}
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <Badge 
+                        variant={standing.position <= 3 ? "default" : "outline"}
+                        className="text-xl px-3 py-1"
+                      >
+                        {standing.position}
+                      </Badge>
+                      {standing.club.logo_url && (
+                        <img 
+                          src={standing.club.logo_url} 
+                          alt={standing.club.name}
+                          className="h-10 w-10 object-contain"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{standing.club.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {standing.played} pertandingan
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-primary">{standing.points}</div>
+                        <div className="text-xs text-muted-foreground">poin</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center text-sm border-t pt-2">
+                      <div>
+                        <div className="text-muted-foreground text-xs">M-S-K</div>
+                        <div className="font-medium">{standing.won}-{standing.drawn}-{standing.lost}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs">Gol</div>
+                        <div className="font-medium">{standing.goals_for}:{standing.goals_against}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs">Selisih</div>
+                        <div className="font-medium">{standing.goal_difference > 0 ? '+' : ''}{standing.goal_difference}</div>
+                      </div>
+                    </div>
+                  </MobileTableCard>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PlayerRegistrationStatusBadge } from "./players/PlayerRegistrationStatusBadge";
 import { useUserRole } from "@/hooks/useUserRole";
+import { MobileTableCard, MobileTableRow } from "@/components/ui/mobile-table-card";
 
 interface Player {
   id: string;
@@ -120,7 +121,8 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border">
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -194,18 +196,83 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-3">
+        {currentPlayers.length === 0 ? (
+          <MobileTableCard>
+            <div className="text-center py-4 text-muted-foreground">
+              Tidak ada data pemain
+            </div>
+          </MobileTableCard>
+        ) : (
+          currentPlayers.map((player, index) => (
+            <MobileTableCard key={player.id} onClick={() => handleView(player)}>
+              <div className="flex items-start gap-3 mb-3">
+                <User className="h-12 w-12 text-primary flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {player.shirt_number && (
+                      <span className="text-2xl font-bold text-primary">
+                        {player.shirt_number}
+                      </span>
+                    )}
+                    <h3 className="font-semibold text-base truncate">{player.full_name}</h3>
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <Badge variant={getPositionColor(player.position)}>
+                      {player.position}
+                    </Badge>
+                    {player.injury_status && (
+                      <Badge variant={getInjuryColor(player.injury_status)}>
+                        {getInjuryLabel(player.injury_status)}
+                      </Badge>
+                    )}
+                    {isAdminKlub && (
+                      <PlayerRegistrationStatusBadge 
+                        status={player.registration_status || 'approved'} 
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-0 border-t pt-2">
+                <MobileTableRow label="Klub" value={player.clubs?.name || "—"} />
+                <MobileTableRow label="Kewarganegaraan" value={player.nationality} />
+                <MobileTableRow 
+                  label="Usia" 
+                  value={`${calculateAge(player.date_of_birth)} tahun`} 
+                />
+              </div>
+              <div className="flex gap-2 mt-3 pt-3 border-t">
+                <div 
+                  className="flex-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <TableActions
+                    onView={() => handleView(player)}
+                    onEdit={() => handleEdit(player)}
+                    onDelete={() => handleDelete(player)}
+                    itemName={player.full_name}
+                  />
+                </div>
+              </div>
+            </MobileTableCard>
+          ))
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="text-sm text-muted-foreground">
           Menampilkan {startIndex + 1}-{Math.min(endIndex, players.length)} dari {players.length} pemain
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-center gap-2">
           <select
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+            className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm min-h-[44px] md:min-h-0"
           >
             <option value={10}>10 / halaman</option>
             <option value={25}>25 / halaman</option>
@@ -217,6 +284,7 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Awal
             </Button>
@@ -225,10 +293,11 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Prev
             </Button>
-            <div className="flex items-center px-3 text-sm">
+            <div className="flex items-center px-3 text-sm min-h-[44px] md:min-h-0">
               {currentPage} / {totalPages}
             </div>
             <Button
@@ -236,6 +305,7 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Next
             </Button>
@@ -244,6 +314,7 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
               size="sm"
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
+              className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
             >
               Akhir
             </Button>
