@@ -1502,7 +1502,15 @@ export type Database = {
           updated_at?: string
           vip_seats?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stadiums_owner_club_id_fkey"
+            columns: ["owner_club_id"]
+            isOneToOne: false
+            referencedRelation: "clubs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       standings: {
         Row: {

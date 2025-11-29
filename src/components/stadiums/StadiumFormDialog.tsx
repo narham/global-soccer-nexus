@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,8 +42,15 @@ export const StadiumFormDialog = ({ open, onOpenChange, stadium, onSuccess }: St
     defaultValues: {
       name: "",
       city: "",
+      address: "",
       capacity: 10000,
+      vip_seats: 0,
+      media_seats: 0,
+      lighting_lux: 0,
+      parking_capacity: 0,
       afc_license_status: "pending",
+      owner_club_id: "",
+      notes: "",
     },
   });
 
@@ -58,10 +65,10 @@ export const StadiumFormDialog = ({ open, onOpenChange, stadium, onSuccess }: St
         city: stadium.city || "",
         address: stadium.address || "",
         capacity: stadium.capacity || 10000,
-        vip_seats: stadium.vip_seats,
-        media_seats: stadium.media_seats,
-        lighting_lux: stadium.lighting_lux,
-        parking_capacity: stadium.parking_capacity,
+        vip_seats: stadium.vip_seats || 0,
+        media_seats: stadium.media_seats || 0,
+        lighting_lux: stadium.lighting_lux || 0,
+        parking_capacity: stadium.parking_capacity || 0,
         afc_license_status: stadium.afc_license_status || "pending",
         owner_club_id: stadium.owner_club_id || "",
         notes: stadium.notes || "",
@@ -70,8 +77,15 @@ export const StadiumFormDialog = ({ open, onOpenChange, stadium, onSuccess }: St
       form.reset({
         name: "",
         city: "",
+        address: "",
         capacity: 10000,
+        vip_seats: 0,
+        media_seats: 0,
+        lighting_lux: 0,
+        parking_capacity: 0,
         afc_license_status: "pending",
+        owner_club_id: "",
+        notes: "",
       });
     }
   }, [stadium, form]);
@@ -104,6 +118,9 @@ export const StadiumFormDialog = ({ open, onOpenChange, stadium, onSuccess }: St
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{stadium ? "Edit Stadion" : "Tambah Stadion"}</DialogTitle>
+          <DialogDescription>
+            Kelola informasi stadion dan fasilitas venue pertandingan
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -171,6 +188,7 @@ export const StadiumFormDialog = ({ open, onOpenChange, stadium, onSuccess }: St
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="">Tidak ada pemilik</SelectItem>
                       {clubs.map((club) => (
                         <SelectItem key={club.id} value={club.id}>{club.name}</SelectItem>
                       ))}
