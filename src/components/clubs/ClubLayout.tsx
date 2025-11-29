@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
 
 export const ClubLayout = () => {
   const { id } = useParams();
@@ -62,10 +62,16 @@ export const ClubLayout = () => {
     <div className="min-h-screen flex flex-col">
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="container mx-auto p-4">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/clubs")} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Kembali ke Daftar Klub
-          </Button>
+          <div className="flex gap-2 mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Dashboard Utama
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate("/clubs")}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Daftar Klub
+            </Button>
+          </div>
           <ClubHeader club={club} />
         </div>
       </div>
