@@ -48,6 +48,13 @@ export function TransferWindowFormDialog({ open, onOpenChange, onSuccess, editin
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate dates
+    if (new Date(formData.end_date) <= new Date(formData.start_date)) {
+      toast.error("Tanggal berakhir harus setelah tanggal mulai");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -124,9 +131,10 @@ export function TransferWindowFormDialog({ open, onOpenChange, onSuccess, editin
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="regular">Regular Transfer</SelectItem>
-                <SelectItem value="mid_season">Mid Season Transfer</SelectItem>
-                <SelectItem value="special">Special Transfer</SelectItem>
+                <SelectItem value="regular">Transfer Reguler (Antar Musim)</SelectItem>
+                <SelectItem value="mid_season">Transfer Tengah Musim</SelectItem>
+                <SelectItem value="special">Transfer Khusus</SelectItem>
+                <SelectItem value="emergency">Transfer Darurat</SelectItem>
               </SelectContent>
             </Select>
           </div>
