@@ -8,6 +8,8 @@ import {
   Calendar,
   FileText,
   Target,
+  Home,
+  Shield,
 } from "lucide-react";
 import {
   Sidebar,
@@ -51,6 +53,34 @@ export function ClubSidebar({ clubId }: ClubSidebarProps) {
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "text-center px-0" : ""}>
+            {collapsed ? "🏠" : "Navigasi"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={currentPath === "/"}>
+                  <NavLink to="/" className="flex items-center gap-2">
+                    <Home className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
+                    {!collapsed && <span>Dashboard Utama</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={currentPath === "/clubs"}>
+                  <NavLink to="/clubs" className="flex items-center gap-2">
+                    <Shield className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
+                    {!collapsed && <span>Daftar Klub</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <div className="my-2 border-t" />
+
         <SidebarGroup>
           <SidebarGroupLabel className={collapsed ? "text-center px-0" : ""}>
             {collapsed ? "🏆" : "Manajemen Klub"}
