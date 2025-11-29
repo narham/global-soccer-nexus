@@ -32,18 +32,26 @@ export function TransferWindowsTable({ windows, onRefresh, onEdit }: TransferWin
 
   const getTypeLabel = (type: string) => {
     const types: Record<string, string> = {
-      regular: "Regular Transfer",
-      mid_season: "Mid Season",
-      special: "Special Transfer",
+      regular: "Transfer Reguler",
+      mid_season: "Transfer Tengah Musim",
+      special: "Transfer Khusus",
+      emergency: "Transfer Darurat",
     };
     return types[type] || type;
   };
 
-  const isActive = (window: any) => {
+  const getWindowStatus = (window: any) => {
     const now = new Date();
     const start = new Date(window.start_date);
     const end = new Date(window.end_date);
-    return window.is_active && now >= start && now <= end;
+    
+    if (window.is_active && now >= start && now <= end) {
+      return { label: "Aktif", variant: "default" as const };
+    } else if (now < start) {
+      return { label: "Akan Datang", variant: "secondary" as const };
+    } else {
+      return { label: "Berakhir", variant: "outline" as const };
+    }
   };
 
   return (
@@ -71,11 +79,10 @@ export function TransferWindowsTable({ windows, onRefresh, onEdit }: TransferWin
                 {format(new Date(window.end_date), "dd MMM yyyy", { locale: id })}
               </TableCell>
               <TableCell>
-                {isActive(window) ? (
-                  <Badge>Aktif</Badge>
-                ) : (
-                  <Badge variant="secondary">Tidak Aktif</Badge>
-                )}
+                {(() => {
+                  const status = getWindowStatus(window);
+                  return <Badge variant={status.variant}>{status.label}</Badge>;
+                })()}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
