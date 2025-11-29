@@ -53,13 +53,14 @@ export function TransferWindowFormDialog({ open, onOpenChange, onSuccess, editin
     try {
       // If setting as active, deactivate all other windows first
       if (formData.is_active) {
-        const query = supabase
+        let query = supabase
           .from("transfer_windows")
-          .update({ is_active: false });
+          .update({ is_active: false })
+          .eq("is_active", true); // Only update currently active windows
         
-        // Only exclude current window if editing
+        // Exclude current window if editing
         if (editingWindow?.id) {
-          query.neq("id", editingWindow.id);
+          query = query.neq("id", editingWindow.id);
         }
         
         await query;
