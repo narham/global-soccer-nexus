@@ -55,7 +55,7 @@ const ClubDashboard = () => {
             .eq("club_id", id)
             .order("created_at", { ascending: false })
             .limit(1)
-            .single(),
+            .maybeSingle(),
           supabase
             .from("player_transfers")
             .select("*", { count: "exact", head: true })

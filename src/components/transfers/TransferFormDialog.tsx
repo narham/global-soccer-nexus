@@ -101,7 +101,7 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
       .from("transfer_windows")
       .select("*")
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
     setActiveWindow(data);
   };
 
