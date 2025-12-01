@@ -6,6 +6,7 @@ export interface NIKValidationResult {
   info?: {
     province: string;
     city: string;
+    district: string;
     dateOfBirth: Date;
     gender: "male" | "female";
   };
@@ -85,6 +86,7 @@ export function validateNIK(nik: string): NIKValidationResult {
     info: {
       province: provinceName || `Kode ${provinceCode}`,
       city: cityName || `Kode ${provinceCode}.${cityCode}`,
+      district: `Kecamatan ${districtCode}`,
       dateOfBirth,
       gender,
     },
