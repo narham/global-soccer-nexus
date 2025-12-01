@@ -32,6 +32,7 @@ import Stadiums from "./pages/Stadiums";
 import Users from "./pages/Users";
 import Referees from "./pages/Referees";
 import RefereesDashboard from "./pages/RefereesDashboard";
+import ProfileDashboard from "./pages/ProfileDashboard";
 import NotFound from "./pages/NotFound";
 import PanitiaDashboard from "./pages/panitia/PanitiaDashboard";
 import PanitiaCompetitionsPage from "./pages/panitia/PanitiaCompetitionsPage";
@@ -86,6 +87,7 @@ const App = () => (
           <Route path="/referees" element={<Layout><Referees /></Layout>} />
           <Route path="/referees/dashboard" element={<Layout><RefereesDashboard /></Layout>} />
           <Route path="/users" element={<Layout><Users /></Layout>} />
+          <Route path="/profile" element={<Layout><ProfileDashboard /></Layout>} />
           
           {/* Panitia Routes */}
           <Route path="/panitia" element={<PanitiaLayout />}>
