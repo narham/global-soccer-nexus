@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Target, CreditCard, RefreshCw, Video } from "lucide-react";
+import { Target, CreditCard, RefreshCw, Video, XCircle, AlertCircle } from "lucide-react";
 import { EventFormDialog } from "./EventFormDialog";
 import { TableActions } from "../TableActions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -91,19 +91,27 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
   const getEventIcon = (type: string) => {
     switch (type) {
       case "goal": return <Target className="h-5 w-5 text-green-600" />;
+      case "own_goal": return <Target className="h-5 w-5 text-orange-600" />;
+      case "penalty_scored": return <Target className="h-5 w-5 text-green-600" />;
+      case "penalty_missed": return <XCircle className="h-5 w-5 text-gray-500" />;
       case "yellow_card": return <CreditCard className="h-5 w-5 text-yellow-500" />;
       case "red_card": return <CreditCard className="h-5 w-5 text-red-600" />;
+      case "second_yellow": return <CreditCard className="h-5 w-5 text-orange-500" />;
       case "substitution": return <RefreshCw className="h-5 w-5 text-blue-600" />;
       case "var": return <Video className="h-5 w-5 text-purple-600" />;
-      default: return null;
+      default: return <AlertCircle className="h-5 w-5 text-gray-400" />;
     }
   };
 
   const getEventLabel = (type: string) => {
     switch (type) {
       case "goal": return "GOL";
+      case "own_goal": return "GOL BUNUH DIRI";
+      case "penalty_scored": return "PENALTI GOL";
+      case "penalty_missed": return "PENALTI GAGAL";
       case "yellow_card": return "Kartu Kuning";
       case "red_card": return "Kartu Merah";
+      case "second_yellow": return "Kartu Kuning Kedua";
       case "substitution": return "Pergantian";
       case "var": return "VAR Check";
       default: return type;
@@ -191,15 +199,37 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
       </Card>
 
       {/* Event Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <Target className="h-5 w-5 text-green-600" />
             <div>
               <p className="text-2xl font-bold">
-                {events.filter(e => e.event_type === "goal").length}
+                {events.filter(e => e.event_type === "goal" || e.event_type === "penalty_scored").length}
               </p>
               <p className="text-sm text-muted-foreground">Total Gol</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-orange-600" />
+            <div>
+              <p className="text-2xl font-bold">
+                {events.filter(e => e.event_type === "own_goal").length}
+              </p>
+              <p className="text-sm text-muted-foreground">Own Goal</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2">
+            <XCircle className="h-5 w-5 text-gray-500" />
+            <div>
+              <p className="text-2xl font-bold">
+                {events.filter(e => e.event_type === "penalty_missed").length}
+              </p>
+              <p className="text-sm text-muted-foreground">Penalti Gagal</p>
             </div>
           </div>
         </Card>
@@ -208,7 +238,7 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
             <CreditCard className="h-5 w-5 text-yellow-500" />
             <div>
               <p className="text-2xl font-bold">
-                {events.filter(e => e.event_type === "yellow_card").length}
+                {events.filter(e => e.event_type === "yellow_card" || e.event_type === "second_yellow").length}
               </p>
               <p className="text-sm text-muted-foreground">Kartu Kuning</p>
             </div>
