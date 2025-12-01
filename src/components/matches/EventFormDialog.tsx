@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,6 +133,9 @@ export const EventFormDialog = ({ open, onOpenChange, matchId, homeClub, awayClu
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{event ? "Edit Event" : "Tambah Event Pertandingan"}</DialogTitle>
+          <DialogDescription>
+            Catat event pertandingan sesuai IFAB Laws of the Game dan FIFA Match Protocol.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

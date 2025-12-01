@@ -110,7 +110,10 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
     }
   };
 
-  const isHomeEvent = (event: any) => event.club_id === homeClub.id;
+  const isHomeEvent = (event: any) => {
+    if (!homeClub?.id || !event?.club_id) return true;
+    return event.club_id === homeClub.id;
+  };
 
   return (
     <div className="space-y-6">
@@ -141,43 +144,48 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
           </div>
         ) : (
           <div className="space-y-3">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className={`flex items-center gap-4 p-4 rounded-lg border ${
-                  isHomeEvent(event) ? "bg-blue-50/50 justify-start" : "bg-red-50/50 justify-end flex-row-reverse"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {getEventIcon(event.event_type)}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="font-mono">
-                        {event.minute}'
-                      </Badge>
-                      <span className="font-semibold">{getEventLabel(event.event_type)}</span>
+            {events.map((event) => {
+              const isHome = isHomeEvent(event);
+              return (
+                <div
+                  key={event.id}
+                  className={`flex items-center gap-4 p-4 rounded-lg border ${
+                    isHome ? "bg-blue-50/50" : "bg-red-50/50"
+                  }`}
+                >
+                  {!isHome && <div className="flex-1" />}
+                  
+                  <div className={`flex items-center gap-3 ${!isHome ? "flex-row-reverse text-right" : ""}`}>
+                    {getEventIcon(event.event_type)}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="font-mono">
+                          {event.minute}'
+                        </Badge>
+                        <span className="font-semibold">{getEventLabel(event.event_type)}</span>
+                      </div>
+                      {event.player && (
+                        <p className="text-sm mt-1">
+                          <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
+                          {event.player.full_name}
+                        </p>
+                      )}
+                      {event.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+                      )}
                     </div>
-                    {event.player && (
-                      <p className="text-sm mt-1">
-                        <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
-                        {event.player.full_name}
-                      </p>
-                    )}
-                    {event.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
-                    )}
                   </div>
-                </div>
 
-                <div className="ml-auto">
+                  {isHome && <div className="flex-1" />}
+                  
                   <TableActions
                     onEdit={() => { setSelectedEvent(event); setDialogOpen(true); }}
                     onDelete={() => handleDelete(event)}
                     itemName={`Event ${event.minute}'`}
                   />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </Card>
