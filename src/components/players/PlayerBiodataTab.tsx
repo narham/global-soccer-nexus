@@ -89,10 +89,6 @@ export const PlayerBiodataTab = ({ player }: PlayerBiodataTabProps) => {
                   <p className="font-medium">{nikValidation.info.city}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Kecamatan</p>
-                  <p className="font-medium">{nikValidation.info.district}</p>
-                </div>
-                <div>
                   <p className="text-sm text-muted-foreground">Jenis Kelamin (dari NIK)</p>
                   <p className="font-medium">
                     {nikValidation.info.gender === "male" ? "Laki-laki" : "Perempuan"}
