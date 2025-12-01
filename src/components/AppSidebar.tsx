@@ -11,6 +11,7 @@ import {
   LogOut,
   UserCog,
   Gavel,
+  User,
 } from "lucide-react";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
@@ -205,6 +206,16 @@ export function AppSidebar() {
         )}
       </SidebarContent>
       <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/profile")}>
+              <NavLink to="/profile" className="flex items-center gap-2">
+                <User className={collapsed ? "mx-auto h-4 w-4" : "h-4 w-4"} />
+                {!collapsed && <span>Profil Saya</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         <Button
           variant="ghost"
           onClick={handleLogout}
