@@ -54,7 +54,8 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
         .from("match_events")
         .select(`
           *,
-          player:players(full_name, shirt_number, position),
+          player:players!player_id(full_name, shirt_number, position),
+          player_out:players!player_out_id(full_name, shirt_number, position),
           club:clubs(name, home_color)
         `)
         .eq("match_id", matchId)
@@ -173,9 +174,16 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
                         <span className="font-semibold">{getEventLabel(event.event_type)}</span>
                       </div>
                       {event.player && (
-                        <p className="text-sm mt-1">
+                        <p className="text-sm mt-1 text-green-700">
                           <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
                           {event.player.full_name}
+                          {event.event_type === "substitution" && " (IN)"}
+                        </p>
+                      )}
+                      {event.event_type === "substitution" && event.player_out && (
+                        <p className="text-sm text-red-600">
+                          <Badge variant="outline" className="mr-1">#{event.player_out.shirt_number}</Badge>
+                          {event.player_out.full_name} (OUT)
                         </p>
                       )}
                       {event.description && (
