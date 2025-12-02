@@ -2001,6 +2001,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      regenerate_competition_standings: {
+        Args: { comp_id: string }
+        Returns: undefined
+      }
+      regenerate_player_statistics: {
+        Args: { comp_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin_federasi" | "admin_klub" | "wasit" | "panitia"
