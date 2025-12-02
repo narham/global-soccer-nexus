@@ -2,13 +2,12 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
 const statsSchema = z.object({
   possession: z.string().optional(),
   shots: z.string().optional(),
@@ -61,25 +60,44 @@ export const StatsFormDialog = ({ open, onOpenChange, matchId, clubId, clubName,
   });
 
   useEffect(() => {
-    if (stats) {
-      form.reset({
-        possession: stats.possession?.toString() || "0",
-        shots: stats.shots?.toString() || "0",
-        shots_on_target: stats.shots_on_target?.toString() || "0",
-        passes: stats.passes?.toString() || "0",
-        pass_accuracy: stats.pass_accuracy?.toString() || "0",
-        tackles: stats.tackles?.toString() || "0",
-        fouls: stats.fouls?.toString() || "0",
-        corners: stats.corners?.toString() || "0",
-        offsides: stats.offsides?.toString() || "0",
-        saves: stats.saves?.toString() || "0",
-        crosses: stats.crosses?.toString() || "0",
-        clearances: stats.clearances?.toString() || "0",
-        interceptions: stats.interceptions?.toString() || "0",
-        duels_won: stats.duels_won?.toString() || "0",
-      });
+    if (open) {
+      if (stats) {
+        form.reset({
+          possession: stats.possession?.toString() || "0",
+          shots: stats.shots?.toString() || "0",
+          shots_on_target: stats.shots_on_target?.toString() || "0",
+          passes: stats.passes?.toString() || "0",
+          pass_accuracy: stats.pass_accuracy?.toString() || "0",
+          tackles: stats.tackles?.toString() || "0",
+          fouls: stats.fouls?.toString() || "0",
+          corners: stats.corners?.toString() || "0",
+          offsides: stats.offsides?.toString() || "0",
+          saves: stats.saves?.toString() || "0",
+          crosses: stats.crosses?.toString() || "0",
+          clearances: stats.clearances?.toString() || "0",
+          interceptions: stats.interceptions?.toString() || "0",
+          duels_won: stats.duels_won?.toString() || "0",
+        });
+      } else {
+        form.reset({
+          possession: "0",
+          shots: "0",
+          shots_on_target: "0",
+          passes: "0",
+          pass_accuracy: "0",
+          tackles: "0",
+          fouls: "0",
+          corners: "0",
+          offsides: "0",
+          saves: "0",
+          crosses: "0",
+          clearances: "0",
+          interceptions: "0",
+          duels_won: "0",
+        });
+      }
     }
-  }, [stats]);
+  }, [open, stats, form]);
 
   const onSubmit = async (data: StatsFormData) => {
     try {
@@ -107,7 +125,7 @@ export const StatsFormDialog = ({ open, onOpenChange, matchId, clubId, clubName,
         if (error) throw error;
         toast({ title: "Statistik berhasil diupdate" });
       } else {
-        const { error } = await supabase.from("match_statistics").insert([statsData]);
+        const { error } = await supabase.from("match_statistics").insert(statsData);
         if (error) throw error;
         toast({ title: "Statistik berhasil ditambahkan" });
       }
@@ -128,6 +146,9 @@ export const StatsFormDialog = ({ open, onOpenChange, matchId, clubId, clubName,
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Input Statistik - {clubName}</DialogTitle>
+          <DialogDescription>
+            Masukkan data statistik pertandingan untuk tim {clubName}. Semua field bersifat opsional.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
