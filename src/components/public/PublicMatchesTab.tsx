@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const PublicMatchesTab = () => {
@@ -16,6 +17,7 @@ export const PublicMatchesTab = () => {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchCompetitions();
@@ -49,17 +51,22 @@ export const PublicMatchesTab = () => {
 
   const fetchCompetitions = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("competitions")
         .select("*")
         .eq("approval_status", "approved")
         .order("start_date", { ascending: false });
 
-      if (data) {
-        setCompetitions(data);
+      if (error) {
+        console.error("Error fetching competitions:", error);
+        toast({ title: "Error", description: "Gagal memuat kompetisi", variant: "destructive" });
+        return;
       }
-    } catch (error) {
+
+      setCompetitions(data || []);
+    } catch (error: any) {
       console.error("Error fetching competitions:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -72,8 +79,8 @@ export const PublicMatchesTab = () => {
         .from("matches")
         .select(`
           *,
-          home_club:clubs!matches_home_club_id_fkey(id, name, logo_url, short_name),
-          away_club:clubs!matches_away_club_id_fkey(id, name, logo_url, short_name),
+          home_club:clubs!home_club_id(id, name, logo_url, short_name),
+          away_club:clubs!away_club_id(id, name, logo_url, short_name),
           competition:competitions(id, name, season)
         `)
         .order("match_date", { ascending: false })
@@ -83,10 +90,18 @@ export const PublicMatchesTab = () => {
         query = query.eq("competition_id", selectedCompetition);
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching matches:", error);
+        toast({ title: "Error", description: "Gagal memuat pertandingan", variant: "destructive" });
+        return;
+      }
+
       setMatches(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching matches:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoadingMatches(false);
     }

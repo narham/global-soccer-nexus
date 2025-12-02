@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Users, Trophy, Target } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 export const PublicPlayersTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -15,6 +16,7 @@ export const PublicPlayersTab = () => {
   const [loading, setLoading] = useState(true);
   const [loadingStats, setLoadingStats] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchCompetitions();
@@ -26,17 +28,22 @@ export const PublicPlayersTab = () => {
 
   const fetchCompetitions = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("competitions")
         .select("*")
         .eq("approval_status", "approved")
         .order("start_date", { ascending: false });
 
-      if (data) {
-        setCompetitions(data);
+      if (error) {
+        console.error("Error fetching competitions:", error);
+        toast({ title: "Error", description: "Gagal memuat kompetisi", variant: "destructive" });
+        return;
       }
-    } catch (error) {
+
+      setCompetitions(data || []);
+    } catch (error: any) {
       console.error("Error fetching competitions:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -58,10 +65,18 @@ export const PublicPlayersTab = () => {
         query = query.eq("competition_id", selectedCompetition);
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error fetching statistics:", error);
+        toast({ title: "Error", description: "Gagal memuat statistik", variant: "destructive" });
+        return;
+      }
+
       setStatistics(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching statistics:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoadingStats(false);
     }

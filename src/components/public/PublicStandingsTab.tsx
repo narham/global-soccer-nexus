@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Trophy, ExternalLink, RefreshCw } from "lucide-react";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
-import { MobileTableCard, MobileTableRow } from "@/components/ui/mobile-table-card";
+import { MobileTableCard } from "@/components/ui/mobile-table-card";
+import { useToast } from "@/hooks/use-toast";
 
 export const PublicStandingsTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -17,6 +18,7 @@ export const PublicStandingsTab = () => {
   const [standings, setStandings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStandings, setLoadingStandings] = useState(false);
+  const { toast } = useToast();
 
   const refreshData = async () => {
     await fetchCompetitions();
@@ -57,18 +59,25 @@ export const PublicStandingsTab = () => {
 
   const fetchCompetitions = async () => {
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("competitions")
         .select("*")
         .eq("approval_status", "approved")
         .order("start_date", { ascending: false });
 
+      if (error) {
+        console.error("Error fetching competitions:", error);
+        toast({ title: "Error", description: "Gagal memuat kompetisi", variant: "destructive" });
+        return;
+      }
+
       if (data && data.length > 0) {
         setCompetitions(data);
         setSelectedCompetition(data[0].id);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching competitions:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -77,7 +86,7 @@ export const PublicStandingsTab = () => {
   const fetchStandings = async () => {
     setLoadingStandings(true);
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("standings")
         .select(`
           *,
@@ -86,9 +95,16 @@ export const PublicStandingsTab = () => {
         .eq("competition_id", selectedCompetition)
         .order("position", { ascending: true });
 
+      if (error) {
+        console.error("Error fetching standings:", error);
+        toast({ title: "Error", description: "Gagal memuat klasemen", variant: "destructive" });
+        return;
+      }
+
       setStandings(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching standings:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setLoadingStandings(false);
     }
