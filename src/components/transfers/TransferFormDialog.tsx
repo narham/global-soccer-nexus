@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const transferSchema = z.object({
   player_id: z.string().min(1, "Pemain wajib dipilih"),
@@ -42,6 +43,7 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
   const [clubs, setClubs] = useState<any[]>([]);
   const [activeWindow, setActiveWindow] = useState<any>(null);
   const { toast } = useToast();
+  const { isAdminFederasi, isAdminKlub, clubId } = useUserRole();
 
   const form = useForm<TransferFormData>({
     resolver: zodResolver(transferSchema),
@@ -77,8 +79,11 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
         requires_itc: transfer.requires_itc || false,
         notes: transfer.notes || "",
       });
+    } else if (isAdminKlub && clubId) {
+      // Auto-set to_club_id to user's club for club admins
+      form.setValue("to_club_id", clubId);
     }
-  }, [transfer, open]);
+  }, [transfer, open, isAdminKlub, clubId]);
 
   const fetchPlayers = async () => {
     const { data } = await supabase
@@ -174,6 +179,11 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{transfer ? "Edit Transfer" : "Ajukan Transfer Pemain"}</DialogTitle>
+          <DialogDescription>
+            {isAdminKlub 
+              ? "Ajukan transfer pemain ke klub Anda sesuai regulasi FIFA TMS" 
+              : "Kelola data transfer pemain antar klub sesuai regulasi FIFA TMS"}
+          </DialogDescription>
         </DialogHeader>
 
         {!activeWindow && (
@@ -244,7 +254,11 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Ke Klub *</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        disabled={isAdminKlub && !transfer}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Pilih klub tujuan" />
@@ -258,6 +272,9 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
                           ))}
                         </SelectContent>
                       </Select>
+                      {isAdminKlub && !transfer && (
+                        <FormDescription>Otomatis diatur ke klub Anda</FormDescription>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
