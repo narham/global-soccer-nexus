@@ -108,9 +108,11 @@ const Transfers = () => {
       )}
 
       <Tabs defaultValue="all" className="w-full" onValueChange={setStatusFilter}>
-        <TabsList>
-          <TabsTrigger value="all">Semua Transfer</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
+        <TabsList className="flex-wrap h-auto gap-1">
+          <TabsTrigger value="all">Semua</TabsTrigger>
+          <TabsTrigger value="pending_club_from">Menunggu Klub Asal</TabsTrigger>
+          <TabsTrigger value="pending_club_to">Menunggu Klub Tujuan</TabsTrigger>
+          <TabsTrigger value="pending_federation">Menunggu Federasi</TabsTrigger>
           <TabsTrigger value="awaiting_itc">Menunggu ITC</TabsTrigger>
           <TabsTrigger value="approved">Disetujui</TabsTrigger>
           <TabsTrigger value="rejected">Ditolak</TabsTrigger>

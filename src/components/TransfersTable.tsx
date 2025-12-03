@@ -38,6 +38,9 @@ export const TransfersTable = ({ transfers, onRefresh }: TransfersTableProps) =>
     switch (status) {
       case "approved": return "default";
       case "pending": return "secondary";
+      case "pending_club_from": return "secondary";
+      case "pending_club_to": return "secondary";
+      case "pending_federation": return "outline";
       case "club_approved": return "outline";
       case "awaiting_itc": return "outline";
       case "rejected": return "destructive";
@@ -50,6 +53,9 @@ export const TransfersTable = ({ transfers, onRefresh }: TransfersTableProps) =>
     switch (status) {
       case "approved": return "Disetujui";
       case "pending": return "Pending";
+      case "pending_club_from": return "Menunggu Klub Asal";
+      case "pending_club_to": return "Menunggu Klub Tujuan";
+      case "pending_federation": return "Menunggu Federasi";
       case "club_approved": return "Disetujui Klub";
       case "awaiting_itc": return "Menunggu ITC";
       case "rejected": return "Ditolak";

@@ -62,7 +62,66 @@ const TransferDetail = () => {
     }
   };
 
-  const handleApprove = async () => {
+  // Handler for origin club approval
+  const handleFromClubApprove = async () => {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("player_transfers")
+        .update({
+          status: "pending_club_to",
+          from_club_approved_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ 
+        title: "Persetujuan klub asal berhasil",
+        description: "Transfer sekarang menunggu persetujuan klub tujuan"
+      });
+      fetchTransfer();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal menyetujui transfer",
+        description: error.message,
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handler for destination club approval
+  const handleToClubApprove = async () => {
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("player_transfers")
+        .update({
+          status: "pending_federation",
+          to_club_approved_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (error) throw error;
+      toast({ 
+        title: "Persetujuan klub tujuan berhasil",
+        description: "Transfer sekarang menunggu persetujuan federasi"
+      });
+      fetchTransfer();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal menyetujui transfer",
+        description: error.message,
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handler for federation approval
+  const handleFederationApprove = async () => {
     setActionLoading(true);
     try {
       const newStatus = transfer.requires_itc ? "awaiting_itc" : "approved";
@@ -86,7 +145,7 @@ const TransferDetail = () => {
       }
 
       toast({ 
-        title: "Transfer disetujui",
+        title: "Transfer disetujui federasi",
         description: transfer.requires_itc ? "Menunggu ITC dari FIFA" : "Transfer selesai diproses"
       });
       fetchTransfer();
@@ -182,6 +241,9 @@ const TransferDetail = () => {
     switch (status) {
       case "approved": return "default";
       case "pending": return "secondary";
+      case "pending_club_from": return "secondary";
+      case "pending_club_to": return "secondary";
+      case "pending_federation": return "outline";
       case "awaiting_itc": return "outline";
       case "rejected": return "destructive";
       default: return "outline";
@@ -192,6 +254,9 @@ const TransferDetail = () => {
     switch (status) {
       case "approved": return "Disetujui";
       case "pending": return "Menunggu Persetujuan";
+      case "pending_club_from": return "Menunggu Klub Asal";
+      case "pending_club_to": return "Menunggu Klub Tujuan";
+      case "pending_federation": return "Menunggu Federasi";
       case "awaiting_itc": return "Menunggu ITC";
       case "rejected": return "Ditolak";
       default: return status;
@@ -207,11 +272,47 @@ const TransferDetail = () => {
     }).format(amount);
   };
 
-  const canApprove = transfer.status === "pending_federation" && isAdminFederasi;
+  // Determine approval permissions
+  const canFromClubApprove = transfer.status === "pending_club_from" && 
+    isAdminKlub && clubId === transfer.from_club_id;
+  const canToClubApprove = transfer.status === "pending_club_to" && 
+    isAdminKlub && clubId === transfer.to_club_id;
+  const canFederationApprove = transfer.status === "pending_federation" && isAdminFederasi;
   const canApproveITC = transfer.status === "awaiting_itc" && transfer.requires_itc && isAdminFederasi;
   const canUploadDocs = isAdminKlub && (clubId === transfer.from_club_id || clubId === transfer.to_club_id);
   const canVerifyDocs = isAdminFederasi;
   const requiresFromClub = !!transfer.from_club_id;
+
+  // Determine current approval context
+  const getCurrentApprovalContext = () => {
+    if (canFromClubApprove) {
+      return {
+        title: "Persetujuan Klub Asal",
+        description: "Sebagai admin klub asal, Anda dapat menyetujui atau menolak transfer pemain ini.",
+        onApprove: handleFromClubApprove,
+        approveLabel: "Setujui Transfer"
+      };
+    }
+    if (canToClubApprove) {
+      return {
+        title: "Persetujuan Klub Tujuan", 
+        description: "Sebagai admin klub tujuan, Anda dapat menyetujui atau menolak transfer pemain ini.",
+        onApprove: handleToClubApprove,
+        approveLabel: "Setujui Transfer"
+      };
+    }
+    if (canFederationApprove) {
+      return {
+        title: "Persetujuan Federasi",
+        description: "Sebagai admin federasi, Anda dapat menyetujui atau menolak transfer ini.",
+        onApprove: handleFederationApprove,
+        approveLabel: "Setujui Transfer"
+      };
+    }
+    return null;
+  };
+
+  const approvalContext = getCurrentApprovalContext();
 
   return (
     <div className="space-y-6">
@@ -404,61 +505,64 @@ const TransferDetail = () => {
         </Alert>
       )}
 
-      {(canApprove || canApproveITC) && (
+      {/* Club Approval Section */}
+      {approvalContext && (
         <Card className="p-6">
-          <h3 className="font-semibold mb-4">
-            {canApproveITC ? "Approval ITC (FIFA)" : "Approval Transfer (Federasi)"}
-          </h3>
+          <h3 className="font-semibold mb-4">{approvalContext.title}</h3>
+          <div className="space-y-4">
+            <Alert>
+              <AlertDescription>{approvalContext.description}</AlertDescription>
+            </Alert>
+            
+            <Textarea
+              placeholder="Komentar atau alasan penolakan..."
+              value={approvalComment}
+              onChange={(e) => setApprovalComment(e.target.value)}
+              rows={3}
+            />
+
+            <div className="flex gap-2">
+              <Button
+                onClick={approvalContext.onApprove}
+                disabled={actionLoading}
+                className="flex-1"
+              >
+                <Check className="mr-2 h-4 w-4" />
+                {approvalContext.approveLabel}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={actionLoading}
+                className="flex-1"
+              >
+                <X className="mr-2 h-4 w-4" />
+                Tolak Transfer
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ITC Approval Section */}
+      {canApproveITC && (
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4">Approval ITC (FIFA)</h3>
           <div className="space-y-4">
             <Alert>
               <AlertDescription>
-                {canApproveITC 
-                  ? "ITC approval diperlukan untuk menyelesaikan transfer internasional ini."
-                  : "Sebagai admin federasi, Anda dapat menyetujui atau menolak transfer ini."}
+                ITC approval diperlukan untuk menyelesaikan transfer internasional ini.
               </AlertDescription>
             </Alert>
-            
-            {canApprove && (
-              <Textarea
-                placeholder="Komentar atau alasan penolakan..."
-                value={approvalComment}
-                onChange={(e) => setApprovalComment(e.target.value)}
-                rows={3}
-              />
-            )}
 
-            <div className="flex gap-2">
-              {canApproveITC ? (
-                <Button
-                  onClick={handleApproveITC}
-                  disabled={actionLoading}
-                  className="flex-1"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Setujui ITC
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <Check className="mr-2 h-4 w-4" />
-                    Setujui Transfer
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleReject}
-                    disabled={actionLoading}
-                    className="flex-1"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Tolak Transfer
-                  </Button>
-                </>
-              )}
-            </div>
+            <Button
+              onClick={handleApproveITC}
+              disabled={actionLoading}
+              className="w-full"
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Setujui ITC
+            </Button>
           </div>
         </Card>
       )}
