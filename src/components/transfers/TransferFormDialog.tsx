@@ -120,9 +120,8 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
 
     setLoading(true);
     try {
-      // Determine initial status based on transfer flow
-      const hasFromClub = !!data.from_club_id;
-      const initialStatus = hasFromClub ? "pending_club_from" : "pending_club_to";
+      // Initial status is always 'pending' - awaiting federation approval
+      const initialStatus = "pending";
 
       const transferData: any = {
         player_id: data.player_id,
