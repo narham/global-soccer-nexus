@@ -120,8 +120,10 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
 
     setLoading(true);
     try {
-      // Initial status is always 'pending' - awaiting federation approval
-      const initialStatus = "pending";
+      // Determine initial status based on transfer flow:
+      // - If from_club_id exists: start with pending_club_from (await origin club approval)
+      // - If free agent (no from_club): start with pending_club_to (await destination club approval)
+      const initialStatus = data.from_club_id ? "pending_club_from" : "pending_club_to";
 
       const transferData: any = {
         player_id: data.player_id,
@@ -149,9 +151,12 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
       } else {
         const { error } = await supabase.from("player_transfers").insert([transferData]);
         if (error) throw error;
+        const approvalMsg = data.from_club_id 
+          ? "Transfer menunggu persetujuan klub asal"
+          : "Transfer menunggu persetujuan klub tujuan";
         toast({ 
           title: "Transfer berhasil diajukan",
-          description: "Transfer menunggu persetujuan federasi"
+          description: approvalMsg
         });
       }
 
