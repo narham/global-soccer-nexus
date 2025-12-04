@@ -129,6 +129,9 @@ export const MatchFormDialog = ({ open, onOpenChange, competitionId, match, onSu
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{match ? "Edit Pertandingan" : "Jadwalkan Pertandingan"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola jadwal dan detail pertandingan sesuai standar AFC
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

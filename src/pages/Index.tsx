@@ -88,7 +88,7 @@ const Index = () => {
           supabase.from("competitions").select("*", { count: "exact", head: true }),
           supabase.from("matches").select("*", { count: "exact", head: true }),
           supabase.from("players").select("*", { count: "exact", head: true }).eq("registration_status", "pending"),
-          supabase.from("player_transfers").select("*", { count: "exact", head: true }).eq("status", "pending"),
+          supabase.from("player_transfers").select("*", { count: "exact", head: true }).in("status", ["pending_club_from", "pending_club_to", "pending_federation"]),
           supabase.from("role_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
           supabase.from("competitions").select("*", { count: "exact", head: true }).eq("approval_status", "pending"),
           supabase.from("competition_player_registrations").select("*", { count: "exact", head: true }).eq("status", "pending"),

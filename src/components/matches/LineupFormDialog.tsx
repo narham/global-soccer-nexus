@@ -144,6 +144,9 @@ export const LineupFormDialog = ({ open, onOpenChange, matchId, clubId, clubName
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{lineup ? "Edit" : "Tambah"} Pemain - {clubName}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola line-up pemain untuk pertandingan ini
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

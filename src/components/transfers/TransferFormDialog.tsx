@@ -179,6 +179,9 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{transfer ? "Edit Transfer" : "Ajukan Transfer Pemain"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Proses transfer pemain sesuai regulasi FIFA TMS
+          </p>
         </DialogHeader>
 
         {!activeWindow && (

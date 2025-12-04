@@ -72,6 +72,9 @@ export const StaffFormDialog = ({ open, onOpenChange, clubId, staff, onSuccess }
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{staff ? "Edit Staf" : "Tambah Staf Baru"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola data staf klub untuk menambahkan ke daftar tim manajemen
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">

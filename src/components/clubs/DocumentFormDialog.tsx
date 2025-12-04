@@ -113,6 +113,9 @@ export const DocumentFormDialog = ({ open, onOpenChange, clubId, document, onSuc
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{document ? "Edit Dokumen" : "Tambah Dokumen Baru"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Upload dan kelola dokumen legal klub
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
