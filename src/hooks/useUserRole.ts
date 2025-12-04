@@ -23,27 +23,25 @@ export function useUserRole(): UserRoleData {
   });
 
   useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          setRoleData({
-            role: null,
-            clubId: null,
-            isAdminFederasi: false,
-            isAdminKlub: false,
-            isPanitia: false,
-            isWasit: false,
-            loading: false,
-          });
-          return;
-        }
+    const fetchUserRole = async (userId: string | null) => {
+      if (!userId) {
+        setRoleData({
+          role: null,
+          clubId: null,
+          isAdminFederasi: false,
+          isAdminKlub: false,
+          isPanitia: false,
+          isWasit: false,
+          loading: false,
+        });
+        return;
+      }
 
+      try {
         const { data, error } = await supabase
           .from("user_roles")
           .select("role, club_id")
-          .eq("user_id", user.id)
+          .eq("user_id", userId)
           .maybeSingle();
 
         if (error) {
@@ -83,7 +81,19 @@ export function useUserRole(): UserRoleData {
       }
     };
 
-    fetchUserRole();
+    // Initial fetch
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      fetchUserRole(user?.id || null);
+    });
+
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      fetchUserRole(session?.user?.id || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return roleData;

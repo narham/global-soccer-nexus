@@ -167,6 +167,9 @@ export const ClubFormDialog = ({ open, onOpenChange, club, onSuccess }: ClubForm
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{club ? "Edit Klub" : "Tambah Klub Baru"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola informasi dan identitas klub sepakbola
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-6 py-4">
@@ -310,9 +313,9 @@ export const ClubFormDialog = ({ open, onOpenChange, club, onSuccess }: ClubForm
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">Aktif</SelectItem>
+                      <SelectItem value="approved">Aktif</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="inactive">Tidak Aktif</SelectItem>
+                      <SelectItem value="rejected">Ditolak</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

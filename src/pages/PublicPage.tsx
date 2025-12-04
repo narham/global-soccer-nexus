@@ -4,6 +4,7 @@ import { PublicNav } from "@/components/public/PublicNav";
 import { PublicStandingsTab } from "@/components/public/PublicStandingsTab";
 import { PublicMatchesTab } from "@/components/public/PublicMatchesTab";
 import { PublicPlayersTab } from "@/components/public/PublicPlayersTab";
+import { PublicLiveMatchesTab } from "@/components/public/PublicLiveMatchesTab";
 import { Trophy, Calendar, Users, Zap } from "lucide-react";
 import { useSwipeableTabs } from "@/hooks/useSwipeGesture";
 
@@ -62,8 +63,8 @@ export default function PublicPage() {
 
           <div id="public-tabs" className="touch-pan-y">
             <TabsContent value="live" className="space-y-4">
-            <PublicMatchesTab />
-          </TabsContent>
+              <PublicLiveMatchesTab />
+            </TabsContent>
 
           <TabsContent value="standings" className="space-y-4">
             <PublicStandingsTab />

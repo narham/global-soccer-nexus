@@ -143,6 +143,9 @@ export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSucce
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{competition ? "Edit Kompetisi" : "Buat Kompetisi Baru"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola kompetisi sesuai regulasi AFC/FIFA
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

@@ -218,6 +218,9 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{player ? "Edit Pemain" : "Registrasi Pemain Baru"}</DialogTitle>
+          <p className="text-sm text-muted-foreground">
+            Kelola data pemain sesuai standar FIFA/AFC
+          </p>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
