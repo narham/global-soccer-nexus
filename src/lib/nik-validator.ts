@@ -55,8 +55,19 @@ export function validateNIK(nik: string): NIKValidationResult {
     errors.push("Bulan lahir tidak valid");
   }
 
-  // Tentukan tahun lengkap (asumsi: 00-30 = 2000-2030, 31-99 = 1931-1999)
-  const fullYear = year <= 30 ? 2000 + year : 1900 + year;
+  // Tentukan tahun lengkap berdasarkan usia yang realistis
+  const currentYear = new Date().getFullYear();
+  const currentCentury = Math.floor(currentYear / 100) * 100;
+  const previousCentury = currentCentury - 100;
+  
+  // Coba dengan abad saat ini (2000-an)
+  let fullYear = currentCentury + year;
+  const age = currentYear - fullYear;
+  
+  // Jika usia tidak realistis (negatif atau > 100), gunakan abad sebelumnya
+  if (age < 0 || age > 100) {
+    fullYear = previousCentury + year;
+  }
 
   // Buat tanggal untuk validasi
   const dateOfBirth = new Date(fullYear, month - 1, day);
@@ -105,7 +116,18 @@ export function extractDateFromNIK(nik: string): Date | null {
     day -= 40;
   }
 
-  const fullYear = year <= 30 ? 2000 + year : 1900 + year;
+  // Tentukan tahun lengkap berdasarkan usia yang realistis
+  const currentYear = new Date().getFullYear();
+  const currentCentury = Math.floor(currentYear / 100) * 100;
+  const previousCentury = currentCentury - 100;
+  
+  let fullYear = currentCentury + year;
+  const age = currentYear - fullYear;
+  
+  if (age < 0 || age > 100) {
+    fullYear = previousCentury + year;
+  }
+  
   const date = new Date(fullYear, month - 1, day);
 
   // Validasi tanggal
