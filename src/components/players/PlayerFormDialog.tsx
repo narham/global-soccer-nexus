@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { NIKInput } from "@/components/players/NIKInput";
 import { PlayerExistsDialog } from "@/components/players/PlayerExistsDialog";
+import { formatDateToInput } from "@/lib/utils";
 
 const playerSchema = z.object({
   full_name: z.string().min(2, "Nama minimal 2 karakter"),
@@ -254,7 +255,7 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
                         onChange={field.onChange}
                         onValidationChange={(isValid, dateOfBirth) => {
                           if (isValid && dateOfBirth) {
-                            form.setValue("date_of_birth", dateOfBirth.toISOString().split("T")[0]);
+                            form.setValue("date_of_birth", formatDateToInput(dateOfBirth));
                           }
                         }}
                         disabled={!!player}
