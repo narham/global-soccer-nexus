@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useUserRole } from "@/hooks/useUserRole";
 import { NIKInput } from "@/components/players/NIKInput";
 import { PlayerExistsDialog } from "@/components/players/PlayerExistsDialog";
+import { PlayerPhotoUpload } from "@/components/players/PlayerPhotoUpload";
 import { formatDateToInput } from "@/lib/utils";
 
 const playerSchema = z.object({
@@ -269,6 +270,26 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
 
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Biodata Lengkap</h3>
+              
+              {/* Photo Upload */}
+              <FormField
+                control={form.control}
+                name="photo_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Foto Pemain</FormLabel>
+                    <FormControl>
+                      <PlayerPhotoUpload
+                        value={field.value || ""}
+                        onChange={field.onChange}
+                        playerName={form.watch("full_name")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
