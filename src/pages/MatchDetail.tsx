@@ -12,6 +12,7 @@ import { MatchEventsTab } from "@/components/matches/MatchEventsTab";
 import { MatchStatsTab } from "@/components/matches/MatchStatsTab";
 import { MatchOfficialsTab } from "@/components/matches/MatchOfficialsTab";
 import { MatchReportTab } from "@/components/matches/MatchReportTab";
+import { MatchTicketsTab } from "@/components/tickets/MatchTicketsTab";
 import { Badge } from "@/components/ui/badge";
 
 const MatchDetail = () => {
@@ -146,11 +147,12 @@ const MatchDetail = () => {
       <MatchHeader match={match} />
 
       <Tabs defaultValue="lineup" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="lineup">⚽ Line-up</TabsTrigger>
           <TabsTrigger value="events">📝 Events</TabsTrigger>
           <TabsTrigger value="stats">📊 Statistik</TabsTrigger>
           <TabsTrigger value="officials">👨‍⚖️ Petugas</TabsTrigger>
+          <TabsTrigger value="tickets">🎫 Tiket</TabsTrigger>
           <TabsTrigger value="report">📋 Laporan</TabsTrigger>
         </TabsList>
 
@@ -168,6 +170,10 @@ const MatchDetail = () => {
 
         <TabsContent value="officials">
           <MatchOfficialsTab matchId={match.id} />
+        </TabsContent>
+
+        <TabsContent value="tickets">
+          <MatchTicketsTab matchId={match.id} />
         </TabsContent>
 
         <TabsContent value="report">

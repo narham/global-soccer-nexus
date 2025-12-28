@@ -775,6 +775,72 @@ export type Database = {
           },
         ]
       }
+      match_ticket_categories: {
+        Row: {
+          category_name: string
+          created_at: string | null
+          description: string | null
+          id: string
+          match_id: string
+          price: number
+          reserved_count: number
+          sale_end_date: string | null
+          sale_start_date: string | null
+          seating_section_id: string | null
+          sold_count: number
+          status: string
+          total_quota: number
+          updated_at: string | null
+        }
+        Insert: {
+          category_name: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          match_id: string
+          price?: number
+          reserved_count?: number
+          sale_end_date?: string | null
+          sale_start_date?: string | null
+          seating_section_id?: string | null
+          sold_count?: number
+          status?: string
+          total_quota?: number
+          updated_at?: string | null
+        }
+        Update: {
+          category_name?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          match_id?: string
+          price?: number
+          reserved_count?: number
+          sale_end_date?: string | null
+          sale_start_date?: string | null
+          seating_section_id?: string | null
+          sold_count?: number
+          status?: string
+          total_quota?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_ticket_categories_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_ticket_categories_seating_section_id_fkey"
+            columns: ["seating_section_id"]
+            isOneToOne: false
+            referencedRelation: "stadium_seating_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           assistant_referee_1: string | null
@@ -1414,6 +1480,50 @@ export type Database = {
           },
         ]
       }
+      stadium_seating_sections: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          section_code: string
+          section_type: string
+          stadium_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          section_code: string
+          section_type?: string
+          stadium_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          section_code?: string
+          section_type?: string
+          stadium_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stadium_seating_sections_stadium_id_fkey"
+            columns: ["stadium_id"]
+            isOneToOne: false
+            referencedRelation: "stadiums"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stadiums: {
         Row: {
           address: string | null
@@ -1577,6 +1687,140 @@ export type Database = {
             columns: ["competition_id"]
             isOneToOne: false
             referencedRelation: "competitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_orders: {
+        Row: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone: string | null
+          cancelled_at: string | null
+          created_at: string | null
+          expired_at: string | null
+          id: string
+          match_id: string
+          notes: string | null
+          order_number: string
+          paid_at: string | null
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string
+          status: string
+          total_amount: number
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name: string
+          buyer_phone?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          expired_at?: string | null
+          id?: string
+          match_id: string
+          notes?: string | null
+          order_number: string
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string
+          buyer_phone?: string | null
+          cancelled_at?: string | null
+          created_at?: string | null
+          expired_at?: string | null
+          id?: string
+          match_id?: string
+          notes?: string | null
+          order_number?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_orders_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          barcode_data: string | null
+          category_id: string
+          checked_in_at: string | null
+          checked_in_by: string | null
+          created_at: string | null
+          holder_name: string | null
+          id: string
+          is_checked_in: boolean | null
+          order_id: string
+          seat_number: string | null
+          status: string
+          ticket_code: string
+          updated_at: string | null
+        }
+        Insert: {
+          barcode_data?: string | null
+          category_id: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string | null
+          holder_name?: string | null
+          id?: string
+          is_checked_in?: boolean | null
+          order_id: string
+          seat_number?: string | null
+          status?: string
+          ticket_code: string
+          updated_at?: string | null
+        }
+        Update: {
+          barcode_data?: string | null
+          category_id?: string
+          checked_in_at?: string | null
+          checked_in_by?: string | null
+          created_at?: string | null
+          holder_name?: string | null
+          id?: string
+          is_checked_in?: boolean | null
+          order_id?: string
+          seat_number?: string | null
+          status?: string
+          ticket_code?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "match_ticket_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1994,6 +2238,8 @@ export type Database = {
       }
     }
     Functions: {
+      generate_order_number: { Args: never; Returns: string }
+      generate_ticket_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
