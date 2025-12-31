@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { InstallPrompt } from "./components/pwa/InstallPrompt";
 import { Layout } from "./components/Layout";
 import { ClubLayout } from "./components/clubs/ClubLayout";
 import { PanitiaLayout } from "./components/panitia/PanitiaLayout";
@@ -43,67 +45,79 @@ import PublicPage from "./pages/PublicPage";
 import PublicClubDetailPage from "./components/public/PublicClubDetailPage";
 import PublicPlayerDetailPage from "./components/public/PublicPlayerDetailPage";
 import PublicCompetitionDetailPage from "./pages/PublicCompetitionDetailPage";
+import InstallApp from "./pages/InstallApp";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes - No Auth Required */}
-          <Route path="/public" element={<PublicPage />} />
-          <Route path="/public/clubs/:id" element={<PublicClubDetailPage />} />
-          <Route path="/public/players/:id" element={<PublicPlayerDetailPage />} />
-          <Route path="/public/competitions/:id" element={<PublicCompetitionDetailPage />} />
-          
-          {/* Auth Routes */}
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<Layout><Index /></Layout>} />
-          <Route path="/clubs" element={<Layout><Clubs /></Layout>} />
-          <Route path="/clubs/:id/*" element={<Layout><ClubLayout /></Layout>}>
-            <Route index element={<ClubDashboard />} />
-            <Route path="info" element={<ClubInfoPage />} />
-            <Route path="players" element={<ClubPlayersPage />} />
-            <Route path="staff" element={<ClubStaffPage />} />
-            <Route path="competitions" element={<ClubCompetitionsPage />} />
-            <Route path="competitions/:compId/players" element={<ClubCompetitionPlayersPage />} />
-            <Route path="matches" element={<ClubMatchesPage />} />
-            <Route path="matches/:matchId" element={<ClubMatchDetailPage />} />
-            <Route path="documents" element={<ClubDocumentsPage />} />
-          </Route>
-          <Route path="/players" element={<Layout><Players /></Layout>} />
-          <Route path="/players/:id" element={<Layout><PlayerDetail /></Layout>} />
-          <Route path="/competitions" element={<Layout><Competitions /></Layout>} />
-          <Route path="/competitions/:id" element={<Layout><CompetitionDetail /></Layout>} />
-          <Route path="/matches" element={<Layout><Matches /></Layout>} />
-          <Route path="/matches/:id" element={<Layout><MatchDetail /></Layout>} />
-          <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
-          <Route path="/transfers/:id" element={<Layout><TransferDetail /></Layout>} />
-          <Route path="/transfer-windows" element={<Layout><TransferWindows /></Layout>} />
-          <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
-          <Route path="/referees" element={<Layout><Referees /></Layout>} />
-          <Route path="/referees/dashboard" element={<Layout><RefereesDashboard /></Layout>} />
-          <Route path="/users" element={<Layout><Users /></Layout>} />
-          <Route path="/profile" element={<Layout><ProfileDashboard /></Layout>} />
-          
-          {/* Panitia Routes */}
-          <Route path="/panitia" element={<PanitiaLayout />}>
-            <Route index element={<PanitiaDashboard />} />
-            <Route path="competitions" element={<PanitiaCompetitionsPage />} />
-            <Route path="competitions/:id" element={<PanitiaCompetitionDetailPage />} />
-            <Route path="matches" element={<PanitiaMatchesPage />} />
-            <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
-          </Route>
-          
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <InstallPrompt />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes - No Auth Required */}
+            <Route path="/public" element={<PublicPage />} />
+            <Route path="/public/clubs/:id" element={<PublicClubDetailPage />} />
+            <Route path="/public/players/:id" element={<PublicPlayerDetailPage />} />
+            <Route path="/public/competitions/:id" element={<PublicCompetitionDetailPage />} />
+            <Route path="/install" element={<InstallApp />} />
+            
+            {/* Auth Routes */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/clubs" element={<Layout><Clubs /></Layout>} />
+            <Route path="/clubs/:id/*" element={<Layout><ClubLayout /></Layout>}>
+              <Route index element={<ClubDashboard />} />
+              <Route path="info" element={<ClubInfoPage />} />
+              <Route path="players" element={<ClubPlayersPage />} />
+              <Route path="staff" element={<ClubStaffPage />} />
+              <Route path="competitions" element={<ClubCompetitionsPage />} />
+              <Route path="competitions/:compId/players" element={<ClubCompetitionPlayersPage />} />
+              <Route path="matches" element={<ClubMatchesPage />} />
+              <Route path="matches/:matchId" element={<ClubMatchDetailPage />} />
+              <Route path="documents" element={<ClubDocumentsPage />} />
+            </Route>
+            <Route path="/players" element={<Layout><Players /></Layout>} />
+            <Route path="/players/:id" element={<Layout><PlayerDetail /></Layout>} />
+            <Route path="/competitions" element={<Layout><Competitions /></Layout>} />
+            <Route path="/competitions/:id" element={<Layout><CompetitionDetail /></Layout>} />
+            <Route path="/matches" element={<Layout><Matches /></Layout>} />
+            <Route path="/matches/:id" element={<Layout><MatchDetail /></Layout>} />
+            <Route path="/transfers" element={<Layout><Transfers /></Layout>} />
+            <Route path="/transfers/:id" element={<Layout><TransferDetail /></Layout>} />
+            <Route path="/transfer-windows" element={<Layout><TransferWindows /></Layout>} />
+            <Route path="/stadiums" element={<Layout><Stadiums /></Layout>} />
+            <Route path="/referees" element={<Layout><Referees /></Layout>} />
+            <Route path="/referees/dashboard" element={<Layout><RefereesDashboard /></Layout>} />
+            <Route path="/users" element={<Layout><Users /></Layout>} />
+            <Route path="/profile" element={<Layout><ProfileDashboard /></Layout>} />
+            
+            {/* Panitia Routes */}
+            <Route path="/panitia" element={<PanitiaLayout />}>
+              <Route index element={<PanitiaDashboard />} />
+              <Route path="competitions" element={<PanitiaCompetitionsPage />} />
+              <Route path="competitions/:id" element={<PanitiaCompetitionDetailPage />} />
+              <Route path="matches" element={<PanitiaMatchesPage />} />
+              <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
+            </Route>
+            
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
