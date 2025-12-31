@@ -56,7 +56,7 @@ export const PublicPlayersTab = () => {
         .from("player_statistics")
         .select(`
           *,
-          player:players_public(id, full_name, photo_url, position, current_club:clubs(name, logo_url))
+          player:players_public(id, full_name, photo_url, position, current_club_id)
         `)
         .order("goals", { ascending: false })
         .limit(50);
@@ -73,7 +73,31 @@ export const PublicPlayersTab = () => {
         return;
       }
 
-      setStatistics(data || []);
+      // Fetch club names separately
+      if (data && data.length > 0) {
+        const clubIds = [...new Set(data.map(s => s.player?.current_club_id).filter(Boolean))];
+        const { data: clubs } = await supabase
+          .from("clubs")
+          .select("id, name, logo_url")
+          .in("id", clubIds);
+
+        const clubMap = (clubs || []).reduce((acc: any, club) => {
+          acc[club.id] = club;
+          return acc;
+        }, {});
+
+        const enrichedData = data.map(stat => ({
+          ...stat,
+          player: stat.player ? {
+            ...stat.player,
+            current_club: clubMap[stat.player.current_club_id] || null
+          } : null
+        }));
+
+        setStatistics(enrichedData);
+      } else {
+        setStatistics(data || []);
+      }
     } catch (error: any) {
       console.error("Error fetching statistics:", error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
