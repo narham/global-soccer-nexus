@@ -227,7 +227,7 @@ const Players = () => {
                 </div>
               </div>
             ) : (
-              <PendingPlayersTable players={filteredPendingPlayers} />
+              <PendingPlayersTable players={filteredPendingPlayers} onRefresh={handleRefresh} />
             )}
           </TabsContent>
         </Tabs>
@@ -253,6 +253,8 @@ const Players = () => {
         open={transferDialogOpen}
         onOpenChange={setTransferDialogOpen}
         onSuccess={handleRefresh}
+        prefilledPlayerId={transferData?.playerId}
+        prefilledFromClubId={transferData?.fromClubId}
       />
 
       <DataImportDialog

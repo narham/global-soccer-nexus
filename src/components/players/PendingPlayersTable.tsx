@@ -28,9 +28,10 @@ interface PendingPlayer {
 
 interface PendingPlayersTableProps {
   players: PendingPlayer[];
+  onRefresh?: () => void;
 }
 
-export const PendingPlayersTable = ({ players }: PendingPlayersTableProps) => {
+export const PendingPlayersTable = ({ players, onRefresh }: PendingPlayersTableProps) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;

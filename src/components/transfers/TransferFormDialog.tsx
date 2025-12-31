@@ -34,9 +34,11 @@ interface TransferFormDialogProps {
   onOpenChange: (open: boolean) => void;
   transfer?: any;
   onSuccess: () => void;
+  prefilledPlayerId?: string;
+  prefilledFromClubId?: string;
 }
 
-export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: TransferFormDialogProps) => {
+export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, prefilledPlayerId, prefilledFromClubId }: TransferFormDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState<any[]>([]);
   const [clubs, setClubs] = useState<any[]>([]);
@@ -77,8 +79,22 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess }: 
         requires_itc: transfer.requires_itc || false,
         notes: transfer.notes || "",
       });
+    } else if (prefilledPlayerId || prefilledFromClubId) {
+      // Handle prefilled data from custom event
+      form.reset({
+        player_id: prefilledPlayerId || "",
+        from_club_id: prefilledFromClubId || "",
+        to_club_id: "",
+        transfer_type: "permanent",
+        transfer_fee: "",
+        contract_start: "",
+        contract_end: "",
+        loan_end_date: "",
+        requires_itc: false,
+        notes: "",
+      });
     }
-  }, [transfer, open]);
+  }, [transfer, open, prefilledPlayerId, prefilledFromClubId]);
 
   const fetchPlayers = async () => {
     const { data } = await supabase
