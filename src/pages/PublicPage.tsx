@@ -9,10 +9,15 @@ import { Trophy, Calendar, Users, Zap } from "lucide-react";
 import { useSwipeableTabs } from "@/hooks/useSwipeGesture";
 
 export default function PublicPage() {
-  const [currentTab, setCurrentTab] = useState(0);
+  const [currentTab, setCurrentTab] = useState("standings");
   const tabs = ["live", "standings", "matches", "players"];
 
-  const swipeHandlers = useSwipeableTabs(tabs.length, currentTab, setCurrentTab);
+  const currentIndex = tabs.indexOf(currentTab);
+  const swipeHandlers = useSwipeableTabs(
+    tabs.length, 
+    currentIndex, 
+    (index) => setCurrentTab(tabs[index])
+  );
 
   useEffect(() => {
     const element = document.getElementById("public-tabs");
@@ -41,7 +46,7 @@ export default function PublicPage() {
           </p>
         </div>
 
-        <Tabs value={tabs[currentTab]} onValueChange={(v) => setCurrentTab(tabs.indexOf(v))} className="space-y-6">
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-[800px]">
             <TabsTrigger value="live" className="flex items-center gap-2">
               <Zap className="h-4 w-4" />
@@ -66,13 +71,13 @@ export default function PublicPage() {
               <PublicLiveMatchesTab />
             </TabsContent>
 
-          <TabsContent value="standings" className="space-y-4">
-            <PublicStandingsTab />
-          </TabsContent>
+            <TabsContent value="standings" className="space-y-4">
+              <PublicStandingsTab />
+            </TabsContent>
 
-          <TabsContent value="matches" className="space-y-4">
-            <PublicMatchesTab />
-          </TabsContent>
+            <TabsContent value="matches" className="space-y-4">
+              <PublicMatchesTab />
+            </TabsContent>
 
             <TabsContent value="players" className="space-y-4">
               <PublicPlayersTab />
