@@ -215,6 +215,69 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
     }));
   };
 
+  const handleRecruitFreeAgent = async () => {
+    if (!existingPlayer || existingPlayer.current_club_id) return;
+    
+    setLoading(true);
+    try {
+      // For free agent recruitment, create a transfer record with type "free"
+      // This still requires federation approval but skips origin club approval
+      const { data: activeWindow } = await supabase
+        .from("transfer_windows")
+        .select("id")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!activeWindow) {
+        toast({
+          variant: "destructive",
+          title: "Transfer Window Tidak Aktif",
+          description: "Tidak ada transfer window aktif saat ini. Rekrutmen free agent harus dilakukan dalam periode transfer.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const contractStart = new Date().toISOString().split('T')[0];
+      const contractEnd = new Date(new Date().setFullYear(new Date().getFullYear() + 2)).toISOString().split('T')[0];
+
+      const { error: transferError } = await supabase.from("player_transfers").insert([{
+        player_id: existingPlayer.id,
+        from_club_id: null, // Free agent - no origin club
+        to_club_id: clubId,
+        transfer_window_id: activeWindow.id,
+        transfer_type: "free",
+        transfer_fee: null,
+        contract_start: contractStart,
+        contract_end: contractEnd,
+        requires_itc: false,
+        itc_status: "not_required",
+        status: "pending_club_to", // Skip origin club, go directly to destination club approval
+        notes: `Rekrutmen Free Agent: ${existingPlayer.full_name}`,
+      }]);
+
+      if (transferError) throw transferError;
+
+      toast({
+        title: "Rekrutmen Free Agent Diajukan",
+        description: `Pengajuan rekrutmen ${existingPlayer.full_name} berhasil dikirim. Menunggu persetujuan klub tujuan dan federasi.`,
+      });
+
+      setShowExistsDialog(false);
+      onOpenChange(false);
+      form.reset();
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal mengajukan rekrutmen",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -593,6 +656,7 @@ export const PlayerFormDialog = ({ open, onOpenChange, player, onSuccess }: Play
         onOpenChange={setShowExistsDialog}
         existingPlayer={existingPlayer}
         onTransfer={handleTransfer}
+        onRecruitFreeAgent={isAdminKlub && clubId ? handleRecruitFreeAgent : undefined}
       />
     </Dialog>
   );

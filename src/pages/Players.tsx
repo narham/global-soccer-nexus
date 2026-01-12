@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Upload } from "lucide-react";
+import { Plus, Search, Upload, UserCheck, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PlayersTable } from "@/components/PlayersTable";
 import { PendingPlayersTable } from "@/components/players/PendingPlayersTable";
@@ -13,6 +13,13 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { TransferFormDialog } from "@/components/transfers/TransferFormDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Player {
   id: string;
@@ -25,6 +32,7 @@ interface Player {
   nik: string | null;
   created_at: string;
   registration_status: string;
+  current_club_id: string | null;
   clubs?: {
     name: string;
   };
@@ -39,6 +47,7 @@ const Players = () => {
   const [importOpen, setImportOpen] = useState(false);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [transferData, setTransferData] = useState<{ playerId: string; fromClubId: string } | null>(null);
+  const [clubFilter, setClubFilter] = useState<"all" | "with_club" | "free_agent">("all");
   const { toast } = useToast();
   const { isAdminKlub, isAdminFederasi, clubId } = useUserRole();
 
@@ -122,14 +131,22 @@ const Players = () => {
     }
   };
 
-  const filteredPlayers = players.filter(player =>
-    player.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.clubs?.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPlayers = players.filter(player => {
+    const matchesSearch = player.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      player.clubs?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesClubFilter = clubFilter === "all" ? true :
+      clubFilter === "free_agent" ? !player.current_club_id :
+      clubFilter === "with_club" ? !!player.current_club_id : true;
+    
+    return matchesSearch && matchesClubFilter;
+  });
+
+  const freeAgentCount = players.filter(p => !p.current_club_id).length;
 
   const filteredPendingPlayers = pendingPlayers.filter(player =>
     player.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    player.clubs?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    player.clubs?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleRefresh = () => {
@@ -166,14 +183,42 @@ const Players = () => {
         )}
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Cari pemain atau posisi..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
-        />
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari pemain atau klub..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        {isAdminFederasi && (
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={clubFilter} onValueChange={(v) => setClubFilter(v as any)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter klub" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Pemain</SelectItem>
+                <SelectItem value="with_club">Terikat Klub</SelectItem>
+                <SelectItem value="free_agent">
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="h-3 w-3 text-green-600" />
+                    Free Agent
+                    {freeAgentCount > 0 && (
+                      <Badge variant="secondary" className="ml-1 text-xs">
+                        {freeAgentCount}
+                      </Badge>
+                    )}
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {loading ? (

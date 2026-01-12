@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User } from "lucide-react";
+import { User, UserCheck } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,7 @@ interface Player {
   date_of_birth: string;
   injury_status: string | null;
   registration_status?: string;
+  current_club_id?: string | null;
   clubs?: {
     name: string;
   } | null;
@@ -163,7 +164,14 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {player.clubs?.name || "—"}
+                    {player.clubs?.name ? (
+                      player.clubs.name
+                    ) : (
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        <UserCheck className="h-3 w-3 mr-1" />
+                        Free Agent
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">{player.nationality}</TableCell>
                   <TableCell className="hidden xl:table-cell">
