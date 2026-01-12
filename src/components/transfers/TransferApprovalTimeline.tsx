@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Clock, XCircle, Circle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, Clock, XCircle, Circle, UserCheck } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
 interface ApprovalStep {
   label: string;
-  status: "completed" | "current" | "pending" | "rejected";
+  status: "completed" | "current" | "pending" | "rejected" | "skipped";
   date?: string;
   approver?: string;
   notes?: string;
@@ -29,12 +30,14 @@ export function TransferApprovalTimeline({
   rejectedReason,
   requiresFromClub,
 }: TransferApprovalTimelineProps) {
+  const isFreeAgentTransfer = !requiresFromClub;
+
   const getSteps = (): ApprovalStep[] => {
     const steps: ApprovalStep[] = [];
 
     // Submission
     steps.push({
-      label: "Transfer Diajukan",
+      label: isFreeAgentTransfer ? "Rekrutmen Free Agent Diajukan" : "Transfer Diajukan",
       status: "completed",
     });
 
@@ -50,6 +53,13 @@ export function TransferApprovalTimeline({
           ? "rejected"
           : "pending",
         date: fromClubApprovedAt || undefined,
+      });
+    } else {
+      // Free agent - mark origin club as skipped
+      steps.push({
+        label: "Persetujuan Klub Asal",
+        status: "skipped",
+        notes: "Free Agent - tidak memerlukan persetujuan klub asal",
       });
     }
 
@@ -105,6 +115,8 @@ export function TransferApprovalTimeline({
         return <Clock className="h-5 w-5 text-blue-600 animate-pulse" />;
       case "rejected":
         return <XCircle className="h-5 w-5 text-red-600" />;
+      case "skipped":
+        return <UserCheck className="h-5 w-5 text-green-500" />;
       default:
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     }
@@ -118,6 +130,8 @@ export function TransferApprovalTimeline({
         return <Badge variant="secondary">Sedang Diproses</Badge>;
       case "rejected":
         return <Badge variant="destructive">Ditolak</Badge>;
+      case "skipped":
+        return <Badge variant="outline" className="border-green-500 text-green-600">Free Agent</Badge>;
       default:
         return <Badge variant="outline">Menunggu</Badge>;
     }
@@ -125,6 +139,16 @@ export function TransferApprovalTimeline({
 
   return (
     <div className="space-y-4">
+      {isFreeAgentTransfer && (
+        <Alert className="border-green-500/50 bg-green-500/10">
+          <UserCheck className="h-4 w-4 text-green-600" />
+          <AlertDescription>
+            <strong>Rekrutmen Free Agent:</strong> Pemain ini tidak terikat klub sebelumnya, 
+            sehingga proses persetujuan klub asal dilewati secara otomatis.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <h3 className="text-lg font-semibold">Timeline Approval</h3>
 
       <div className="relative">

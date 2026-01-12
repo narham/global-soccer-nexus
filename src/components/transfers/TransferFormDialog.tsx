@@ -100,9 +100,26 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, pr
     const { data } = await supabase
       .from("players")
       .select("id, full_name, position, current_club_id, clubs:current_club_id(name)")
+      .eq("registration_status", "approved")
       .order("full_name");
     setPlayers(data || []);
   };
+
+  // Get selected player info
+  const selectedPlayer = players.find(p => p.id === form.watch("player_id"));
+  const isSelectedPlayerFreeAgent = selectedPlayer && !selectedPlayer.current_club_id;
+
+  // Auto-set transfer type and from_club when player is selected
+  useEffect(() => {
+    if (selectedPlayer) {
+      if (isSelectedPlayerFreeAgent) {
+        form.setValue("transfer_type", "free");
+        form.setValue("from_club_id", "");
+      } else if (selectedPlayer.current_club_id) {
+        form.setValue("from_club_id", selectedPlayer.current_club_id);
+      }
+    }
+  }, [selectedPlayer, isSelectedPlayerFreeAgent]);
 
   const fetchClubs = async () => {
     const { data } = await supabase
@@ -213,6 +230,17 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, pr
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4">
               <h3 className="font-semibold text-sm">Informasi Pemain & Klub</h3>
+              
+              {/* Free Agent Alert */}
+              {isSelectedPlayerFreeAgent && (
+                <Alert className="border-green-500/50 bg-green-500/10">
+                  <AlertCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription>
+                    <strong>Free Agent:</strong> Pemain ini tidak terikat klub. Transfer tidak memerlukan persetujuan klub asal.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -229,7 +257,7 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, pr
                         <SelectContent>
                           {players.map((player) => (
                             <SelectItem key={player.id} value={player.id}>
-                              {player.full_name} - {player.position} ({player.clubs?.name || "Free Agent"})
+                              {player.full_name} - {player.position} ({player.clubs?.name || "🟢 Free Agent"})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -244,10 +272,14 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, pr
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Dari Klub</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        disabled={isSelectedPlayerFreeAgent}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Kosongkan jika free agent" />
+                            <SelectValue placeholder={isSelectedPlayerFreeAgent ? "Free Agent (tanpa klub)" : "Kosongkan jika free agent"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -258,6 +290,11 @@ export const TransferFormDialog = ({ open, onOpenChange, transfer, onSuccess, pr
                           ))}
                         </SelectContent>
                       </Select>
+                      {isSelectedPlayerFreeAgent && (
+                        <FormDescription className="text-green-600">
+                          Pemain Free Agent - tidak memerlukan klub asal
+                        </FormDescription>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}

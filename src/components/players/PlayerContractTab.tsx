@@ -1,16 +1,35 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { format, differenceInDays } from "date-fns";
 import { id } from "date-fns/locale";
-import { AlertCircle, TrendingUp } from "lucide-react";
+import { AlertCircle, TrendingUp, UserMinus, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface PlayerContractTabProps {
   player: any;
   onUpdate: () => void;
 }
 
-export const PlayerContractTab = ({ player }: PlayerContractTabProps) => {
+export const PlayerContractTab = ({ player, onUpdate }: PlayerContractTabProps) => {
+  const { toast } = useToast();
+  const { isAdminFederasi } = useUserRole();
+  const [releaseDialogOpen, setReleaseDialogOpen] = useState(false);
+  const [releasing, setReleasing] = useState(false);
   const formatDate = (date: string | null) => {
     if (!date) return "—";
     return format(new Date(date), "dd MMMM yyyy", { locale: id });
@@ -56,6 +75,53 @@ export const PlayerContractTab = ({ player }: PlayerContractTabProps) => {
   const contractWarning = player.contract_end
     ? differenceInDays(new Date(player.contract_end), new Date())
     : null;
+
+  const isFreeAgent = !player.current_club_id;
+
+  const handleReleasePlayer = async () => {
+    setReleasing(true);
+    try {
+      // Update player to free agent status
+      const { error: playerError } = await supabase
+        .from("players")
+        .update({
+          current_club_id: null,
+          transfer_status: "available",
+          contract_end: new Date().toISOString().split('T')[0],
+        })
+        .eq("id", player.id);
+
+      if (playerError) throw playerError;
+
+      // Add history record for the release
+      if (player.current_club_id) {
+        const { error: historyError } = await supabase
+          .from("player_history")
+          .update({ to_date: new Date().toISOString().split('T')[0] })
+          .eq("player_id", player.id)
+          .eq("club_id", player.current_club_id)
+          .is("to_date", null);
+
+        if (historyError) console.error("Failed to update history:", historyError);
+      }
+
+      toast({
+        title: "Pemain dilepas dari klub",
+        description: `${player.full_name} sekarang menjadi Free Agent`,
+      });
+      
+      setReleaseDialogOpen(false);
+      onUpdate();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal melepas pemain",
+        description: error.message,
+      });
+    } finally {
+      setReleasing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -135,6 +201,44 @@ export const PlayerContractTab = ({ player }: PlayerContractTabProps) => {
         </div>
       </Card>
 
+      {/* Admin Federasi can release player from club */}
+      {isAdminFederasi && player.current_club_id && !isFreeAgent && (
+        <Card className="p-6 border-amber-500/50">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <UserMinus className="h-5 w-5 text-amber-600" />
+            Tindakan Admin Federasi
+          </h3>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Sebagai Admin Federasi, Anda dapat melepas pemain dari klubnya dan menjadikannya Free Agent.
+              Tindakan ini biasanya dilakukan jika:
+            </p>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+              <li>Kontrak pemain telah berakhir</li>
+              <li>Pemain diberhentikan oleh klub</li>
+              <li>Mutasi pemain atas permintaan federasi</li>
+            </ul>
+            <Button 
+              variant="outline" 
+              className="border-amber-500 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950"
+              onClick={() => setReleaseDialogOpen(true)}
+            >
+              <UserMinus className="h-4 w-4 mr-2" />
+              Lepas dari Klub
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {isFreeAgent && (
+        <Alert className="border-green-500/50 bg-green-500/10">
+          <AlertCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription>
+            <strong>Status: Free Agent</strong> - Pemain ini tidak terikat kontrak dengan klub manapun dan dapat direkrut langsung.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Catatan FIFA/AFC</h3>
         <div className="space-y-2 text-sm text-muted-foreground">
@@ -144,6 +248,37 @@ export const PlayerContractTab = ({ player }: PlayerContractTabProps) => {
           <p>• Transfer window sesuai regulasi AFC dan FIFA</p>
         </div>
       </Card>
+
+      {/* Release confirmation dialog */}
+      <AlertDialog open={releaseDialogOpen} onOpenChange={setReleaseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Lepas Pemain dari Klub?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan melepas <strong>{player.full_name}</strong> dari <strong>{player.clubs?.name}</strong>.
+              Pemain akan menjadi Free Agent dan dapat direkrut oleh klub lain.
+              <br /><br />
+              Tindakan ini akan:
+              <ul className="list-disc list-inside mt-2">
+                <li>Menghapus afiliasi pemain dengan klub</li>
+                <li>Mengubah status transfer menjadi "Tersedia"</li>
+                <li>Mencatat tanggal berakhir di riwayat klub</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={releasing}>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReleasePlayer}
+              disabled={releasing}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {releasing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Lepas Pemain
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
