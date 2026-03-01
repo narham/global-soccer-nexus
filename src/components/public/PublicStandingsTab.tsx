@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 export const PublicStandingsTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [selectedCompetition, setSelectedCompetition] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [standings, setStandings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStandings, setLoadingStandings] = useState(false);
@@ -110,6 +111,9 @@ export const PublicStandingsTab = () => {
     }
   };
 
+  const filteredCompetitions = statusFilter === 'all' 
+    ? competitions 
+    : competitions.filter(c => c.status === statusFilter);
   const selectedComp = competitions.find(c => c.id === selectedCompetition);
 
   if (loading) {
@@ -157,19 +161,32 @@ export const PublicStandingsTab = () => {
               </CardTitle>
               <CardDescription>Lihat klasemen dan statistik tim</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
                 <SelectTrigger className="w-[300px]">
                   <SelectValue placeholder="Pilih kompetisi" />
                 </SelectTrigger>
                 <SelectContent>
-                  {competitions.map((comp) => (
+                  {filteredCompetitions.map((comp) => (
                     <SelectItem key={comp.id} value={comp.id}>
                       {comp.name} ({comp.season})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <div className="flex gap-1">
+                {['all', 'ongoing', 'upcoming', 'finished'].map((s) => (
+                  <Button
+                    key={s}
+                    variant={statusFilter === s ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter(s)}
+                    className="capitalize text-xs"
+                  >
+                    {s === 'all' ? 'Semua' : s === 'ongoing' ? 'Berjalan' : s === 'upcoming' ? 'Akan Datang' : 'Selesai'}
+                  </Button>
+                ))}
+              </div>
               {selectedCompetition && (
                 <Button
                   variant="outline"

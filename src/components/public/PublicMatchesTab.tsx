@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -14,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export const PublicMatchesTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
   const [selectedCompetition, setSelectedCompetition] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
@@ -121,6 +123,9 @@ export const PublicMatchesTab = () => {
 
   const liveMatches = matches.filter(m => m.status === "live");
   const otherMatches = matches.filter(m => m.status !== "live");
+  const filteredCompetitions = statusFilter === 'all' 
+    ? competitions 
+    : competitions.filter(c => c.status === statusFilter);
 
   if (loading) {
     return (
@@ -143,19 +148,34 @@ export const PublicMatchesTab = () => {
               </CardTitle>
               <CardDescription>Lihat jadwal dan hasil pertandingan</CardDescription>
             </div>
-            <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-              <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Semua kompetisi" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kompetisi</SelectItem>
-                {competitions.map((comp) => (
-                  <SelectItem key={comp.id} value={comp.id}>
-                    {comp.name} ({comp.season})
-                  </SelectItem>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+              <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+                <SelectTrigger className="w-[300px]">
+                  <SelectValue placeholder="Semua kompetisi" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Kompetisi</SelectItem>
+                  {filteredCompetitions.map((comp) => (
+                    <SelectItem key={comp.id} value={comp.id}>
+                      {comp.name} ({comp.season})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex gap-1">
+                {['all', 'ongoing', 'upcoming', 'finished'].map((s) => (
+                  <Button
+                    key={s}
+                    variant={statusFilter === s ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter(s)}
+                    className="capitalize text-xs"
+                  >
+                    {s === 'all' ? 'Semua' : s === 'ongoing' ? 'Berjalan' : s === 'upcoming' ? 'Akan Datang' : 'Selesai'}
+                  </Button>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
