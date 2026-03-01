@@ -46,6 +46,7 @@ import PublicClubDetailPage from "./components/public/PublicClubDetailPage";
 import PublicPlayerDetailPage from "./components/public/PublicPlayerDetailPage";
 import PublicCompetitionDetailPage from "./pages/PublicCompetitionDetailPage";
 import InstallApp from "./pages/InstallApp";
+import EPlayerCards from "./pages/EPlayerCards";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -111,6 +112,7 @@ const App = () => (
               <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
             </Route>
             
+            <Route path="/e-player-cards" element={<Layout><EPlayerCards /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

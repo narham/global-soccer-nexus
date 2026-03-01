@@ -12,6 +12,7 @@ import {
   UserCog,
   Gavel,
   User,
+  CreditCard,
 } from "lucide-react";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
@@ -42,6 +43,7 @@ const menuItems = [
   { title: "Transfer", url: "/transfers", icon: ArrowRightLeft },
   { title: "Wasit", url: "/referees", icon: Gavel },
   { title: "Stadion", url: "/stadiums", icon: Building2 },
+  { title: "E-Player Card", url: "/e-player-cards", icon: CreditCard },
 ];
 
 const adminMenuItems = [

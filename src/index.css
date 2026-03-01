@@ -159,4 +159,19 @@
   .transition-smooth {
     transition: var(--transition-smooth);
   }
+
+  .neon-green {
+    box-shadow: 0 0 15px hsla(142, 71%, 45%, 0.5), inset 0 0 15px hsla(142, 71%, 45%, 0.1);
+    border-color: hsl(142, 71%, 45%);
+  }
+
+  .neon-yellow {
+    box-shadow: 0 0 15px hsla(45, 93%, 47%, 0.5), inset 0 0 15px hsla(45, 93%, 47%, 0.1);
+    border-color: hsl(45, 93%, 47%);
+  }
+
+  .neon-red {
+    box-shadow: 0 0 15px hsla(0, 84%, 60%, 0.5), inset 0 0 15px hsla(0, 84%, 60%, 0.1);
+    border-color: hsl(0, 84%, 60%);
+  }
 }
