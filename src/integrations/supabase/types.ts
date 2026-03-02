@@ -947,6 +947,42 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json | null
+          description: string
+          id: string
+          is_read: boolean
+          link: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          description: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          description?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_documents: {
         Row: {
           created_at: string
@@ -2246,6 +2282,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      notify_users_by_role: {
+        Args: {
+          _club_id?: string
+          _data?: Json
+          _description: string
+          _link?: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _title: string
+          _type: string
+        }
+        Returns: undefined
       }
       regenerate_competition_standings: {
         Args: { comp_id: string }

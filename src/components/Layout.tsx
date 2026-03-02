@@ -7,7 +7,7 @@ import { Session } from "@supabase/supabase-js";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { CommandPalette } from "@/components/navigation/CommandPalette";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
-import { useUserRole } from "@/hooks/useUserRole";
+
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,7 +17,6 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isAdminFederasi } = useUserRole();
 
   useEffect(() => {
     // Set up auth state listener
@@ -74,7 +73,7 @@ export function Layout({ children }: LayoutProps) {
               <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                 <span className="text-xs">⌘</span>K
               </kbd>
-              {isAdminFederasi && <NotificationDropdown />}
+              <NotificationDropdown />
             </div>
           </header>
           <main className="flex-1 p-6 pb-20 md:pb-6">
