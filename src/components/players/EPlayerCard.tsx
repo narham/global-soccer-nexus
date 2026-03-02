@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlayerQRCode } from './PlayerQRCode';
 import { cn } from '@/lib/utils';
+import { getNationalityFlag } from '@/lib/nationality-flags';
 
 interface EPlayerCardProps {
   player: {
@@ -29,17 +30,6 @@ const getAgeCategory = (dob: string): string => {
   return 'Senior';
 };
 
-const getNationalityFlag = (nationality: string): string => {
-  const n = nationality.toLowerCase();
-  if (n.includes('indonesia')) return '🇮🇩';
-  if (n.includes('japan')) return '🇯🇵';
-  if (n.includes('korea')) return '🇰🇷';
-  if (n.includes('brazil')) return '🇧🇷';
-  if (n.includes('argentina')) return '🇦🇷';
-  if (n.includes('malaysia')) return '🇲🇾';
-  if (n.includes('thailand')) return '🇹🇭';
-  return '🏳️';
-};
 
 const getStatusConfig = (status: string) => {
   switch (status) {
