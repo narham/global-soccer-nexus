@@ -14,7 +14,7 @@ import {
   User,
   CreditCard,
 } from "lucide-react";
-import { useAdminNotifications } from "@/hooks/useAdminNotifications";
+import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import {
   Sidebar,
@@ -64,18 +64,14 @@ export function AppSidebar() {
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
   const { role, isAdminFederasi, isAdminKlub, isPanitia, isWasit } = useUserRole();
-  const { notifications } = useAdminNotifications();
+  const { notifications } = useNotifications();
 
-  // Count notifications by type
-  const competitionPendingCount = isAdminFederasi 
-    ? notifications.filter(n => n.type === 'competition').length 
-    : 0;
-  const playerPendingCount = isAdminFederasi 
-    ? notifications.filter(n => n.type === 'player' || n.type === 'player_registration' || n.type === 'player_document').length 
-    : 0;
-  const transferPendingCount = isAdminFederasi 
-    ? notifications.filter(n => n.type === 'transfer').length 
-    : 0;
+  // Count unread notifications by type
+  const unreadNotifs = notifications.filter(n => !n.is_read);
+  const competitionCount = unreadNotifs.filter(n => n.type === 'competition').length;
+  const playerCount = unreadNotifs.filter(n => ['player', 'player_registration', 'player_document'].includes(n.type)).length;
+  const transferCount = unreadNotifs.filter(n => n.type === 'transfer').length;
+  const matchCount = unreadNotifs.filter(n => n.type === 'match_assignment').length;
 
   const isActive = (path: string) => currentPath === path;
 
@@ -139,11 +135,10 @@ export function AppSidebar() {
             <SidebarMenu>
               {filteredMenuItems.map((item) => {
                 let notifCount = 0;
-                if (isAdminFederasi) {
-                  if (item.title === 'Kompetisi') notifCount = competitionPendingCount;
-                  if (item.title === 'Pemain') notifCount = playerPendingCount;
-                  if (item.title === 'Transfer') notifCount = transferPendingCount;
-                }
+                if (item.title === 'Kompetisi') notifCount = competitionCount;
+                if (item.title === 'Pemain') notifCount = playerCount;
+                if (item.title === 'Transfer') notifCount = transferCount;
+                if (item.title === 'Pertandingan') notifCount = matchCount;
 
                 return (
                   <SidebarMenuItem key={item.title}>
