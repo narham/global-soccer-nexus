@@ -17,7 +17,7 @@ const competitionSchema = z.object({
   name: z.string().min(3, "Nama kompetisi minimal 3 karakter"),
   season: z.string().min(1, "Musim wajib diisi"),
   type: z.enum(["liga", "piala", "youth_league"]),
-  format: z.enum(["round_robin", "knockout", "group_knockout"]),
+  format: z.enum(["round_robin", "knockout", "group_knockout", "swiss_system"]),
   start_date: z.string().min(1, "Tanggal mulai wajib diisi"),
   end_date: z.string().optional(),
   num_teams: z.string().optional(),
@@ -244,12 +244,14 @@ export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSucce
                           <SelectItem value="round_robin">Round Robin (Home & Away)</SelectItem>
                           <SelectItem value="knockout">Knockout (Single/Two-leg)</SelectItem>
                           <SelectItem value="group_knockout">Grup + Knockout (AFC Format)</SelectItem>
+                          <SelectItem value="swiss_system">Swiss System</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
                         {selectedFormat === "round_robin" && "Setiap tim main 2x (H&A)"}
                         {selectedFormat === "knockout" && "Sistem gugur langsung"}
                         {selectedFormat === "group_knockout" && "Fase grup dilanjut knockout"}
+                        {selectedFormat === "swiss_system" && "Pasangan lawan berdasarkan poin, jumlah ronde ditentukan"}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

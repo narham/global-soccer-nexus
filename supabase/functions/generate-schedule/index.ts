@@ -251,6 +251,38 @@ serve(async (req) => {
       }
 
       console.log(`Generated ${matches.length} first-round knockout matches`);
+    } else if (format === "swiss_system") {
+      // Swiss System: pair teams by points, no rematches
+      console.log("Generating Swiss System schedule");
+
+      const numRounds = Math.ceil(Math.log2(teams.length));
+      let currentDate = new Date(startDate);
+
+      // For Round 1: random pairing (seed-based)
+      // Subsequent rounds would need to be generated after results come in
+      // Here we generate Round 1 and placeholder structure
+
+      // Round 1: Top seed vs bottom seed pairing (like UEFA Swiss)
+      const halfLen = Math.floor(teams.length / 2);
+      for (let i = 0; i < halfLen; i++) {
+        matches.push({
+          competition_id: competitionId,
+          home_club_id: teams[i].club_id,
+          away_club_id: teams[teams.length - 1 - i].club_id,
+          match_date: new Date(currentDate).toISOString(),
+          round: `Ronde 1`,
+          matchday: 1,
+          status: "scheduled",
+        });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // If odd number of teams, last team gets a bye (no match in round 1)
+      if (teams.length % 2 !== 0) {
+        console.log(`Team ${teams[halfLen].club_id} gets a bye in Round 1`);
+      }
+
+      console.log(`Generated ${matches.length} Swiss System Round 1 matches (${numRounds} total rounds planned)`);
     }
 
     // Insert all matches

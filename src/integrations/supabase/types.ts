@@ -2307,7 +2307,11 @@ export type Database = {
     Enums: {
       app_role: "admin_federasi" | "admin_klub" | "wasit" | "panitia"
       card_type: "yellow" | "red"
-      competition_format: "round_robin" | "knockout" | "group_knockout"
+      competition_format:
+        | "round_robin"
+        | "knockout"
+        | "group_knockout"
+        | "swiss_system"
       competition_type: "liga" | "piala" | "youth_league"
       match_status:
         | "scheduled"
@@ -2446,7 +2450,12 @@ export const Constants = {
     Enums: {
       app_role: ["admin_federasi", "admin_klub", "wasit", "panitia"],
       card_type: ["yellow", "red"],
-      competition_format: ["round_robin", "knockout", "group_knockout"],
+      competition_format: [
+        "round_robin",
+        "knockout",
+        "group_knockout",
+        "swiss_system",
+      ],
       competition_type: ["liga", "piala", "youth_league"],
       match_status: ["scheduled", "live", "finished", "postponed", "cancelled"],
       player_position: ["GK", "DF", "MF", "FW"],

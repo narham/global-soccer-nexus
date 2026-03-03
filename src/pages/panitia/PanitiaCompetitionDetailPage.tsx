@@ -148,7 +148,7 @@ export default function PanitiaCompetitionDetailPage() {
             </TabsContent>
 
             <TabsContent value="matches">
-              <CompetitionMatchesTab competitionId={competition.id} />
+              <CompetitionMatchesTab competitionId={competition.id} competitionFormat={competition.format} />
             </TabsContent>
 
             <TabsContent value="standings">

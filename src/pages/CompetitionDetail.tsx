@@ -100,7 +100,7 @@ const CompetitionDetail = () => {
         </TabsContent>
 
         <TabsContent value="matches">
-          <CompetitionMatchesTab competitionId={competition.id} />
+          <CompetitionMatchesTab competitionId={competition.id} competitionFormat={competition.format} />
         </TabsContent>
 
         <TabsContent value="standings">

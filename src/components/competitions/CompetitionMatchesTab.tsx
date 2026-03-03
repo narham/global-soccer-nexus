@@ -14,14 +14,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface CompetitionMatchesTabProps {
   competitionId: string;
+  competitionFormat?: string;
 }
 
-export const CompetitionMatchesTab = ({ competitionId }: CompetitionMatchesTabProps) => {
+export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: CompetitionMatchesTabProps) => {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [generating, setGenerating] = useState(false);
+  const [generatingSwissRound, setGeneratingSwissRound] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,6 +91,27 @@ export const CompetitionMatchesTab = ({ competitionId }: CompetitionMatchesTabPr
     }
   };
 
+  const handleGenerateSwissRound = async () => {
+    setGeneratingSwissRound(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-swiss-round", {
+        body: { competitionId },
+      });
+
+      if (error) throw error;
+      toast({ title: "Ronde Swiss berhasil dibuat", description: data.message });
+      fetchMatches();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Gagal generate ronde Swiss",
+        description: error.message,
+      });
+    } finally {
+      setGeneratingSwissRound(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled": return "secondary";
@@ -134,6 +157,20 @@ export const CompetitionMatchesTab = ({ competitionId }: CompetitionMatchesTabPr
                   <CalendarIcon className="mr-2 h-4 w-4" />
                 )}
                 Generate Jadwal
+              </Button>
+            )}
+            {competitionFormat === "swiss_system" && matches.length > 0 && (
+              <Button 
+                variant="secondary" 
+                onClick={handleGenerateSwissRound}
+                disabled={generatingSwissRound}
+              >
+                {generatingSwissRound ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                )}
+                Generate Ronde Berikutnya
               </Button>
             )}
             <Button onClick={() => { setSelectedMatch(null); setDialogOpen(true); }}>

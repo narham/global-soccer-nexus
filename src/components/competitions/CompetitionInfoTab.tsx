@@ -29,6 +29,16 @@ export const CompetitionInfoTab = ({ competition }: CompetitionInfoTabProps) => 
         "• Knockout: Two-leg hingga final (single match)",
         "• Sesuai AFC Champions League Regulations",
       ];
+    } else if (format === "swiss_system") {
+      return [
+        "• Semua tim berada dalam satu pool (tanpa grup)",
+        "• Setiap ronde, tim dipasangkan berdasarkan poin yang sama/serupa",
+        "• Tidak ada tim yang bertemu lawan yang sama dua kali",
+        "• Jumlah ronde = ceil(log2(jumlah tim)), biasanya 5-9 ronde",
+        "• Menang: 3 poin | Seri: 1 poin | Kalah: 0 poin",
+        "• Klasemen akhir menentukan peringkat (tiebreak: selisih gol, gol dicetak)",
+        "• Format modern digunakan UEFA Champions League sejak 2024/25",
+      ];
     }
     return [];
   };

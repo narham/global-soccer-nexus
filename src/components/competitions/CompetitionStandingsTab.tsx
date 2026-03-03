@@ -78,7 +78,7 @@ export const CompetitionStandingsTab = ({ competitionId, format }: CompetitionSt
         acc[group].push(standing);
         return acc;
       }, {})
-    : { "Klasemen Liga": standings };
+    : { [format === "swiss_system" ? "Klasemen Swiss System" : "Klasemen Liga"]: standings };
 
   return (
     <div className="space-y-6">
@@ -160,6 +160,20 @@ export const CompetitionStandingsTab = ({ competitionId, format }: CompetitionSt
           )}
         </Card>
       ))}
+
+      {format === "swiss_system" && standings.length > 0 && (
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4">Keterangan Swiss System</h3>
+          <div className="space-y-2 text-sm">
+            <p>🔄 <strong>Pairing:</strong> Setiap ronde, tim dengan poin sama dipasangkan</p>
+            <p>🚫 <strong>No Rematch:</strong> Tidak ada tim yang bertemu lawan yang sama dua kali</p>
+            <p>📊 <strong>Tiebreak:</strong> Selisih gol → Gol dicetak → Head-to-head</p>
+            <p className="text-muted-foreground mt-4">
+              * Format ini memaksimalkan pertandingan kompetitif dengan jumlah ronde yang efisien
+            </p>
+          </div>
+        </Card>
+      )}
 
       {format === "round_robin" && standings.length > 0 && (
         <Card className="p-6">
