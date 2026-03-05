@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import useEmblaCarousel from 'embla-carousel-react';
 
 const EPlayerCards = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
