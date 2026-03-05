@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { EPlayerCard } from '@/components/players/EPlayerCard';
@@ -10,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import useEmblaCarousel from 'embla-carousel-react';
 
 const EPlayerCards = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [posFilter, setPosFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -130,7 +132,7 @@ const EPlayerCards = () => {
                 className="flex-none"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <div className="animate-fade-in">
+                <div className="animate-fade-in cursor-pointer" onClick={() => navigate(`/e-player-cards/${player.id}`)}>
                   <EPlayerCard player={player} />
                 </div>
               </div>
@@ -144,8 +146,9 @@ const EPlayerCards = () => {
             {filtered.map((player: any, i: number) => (
               <div
                 key={player.id}
-                className="animate-fade-in"
+                className="animate-fade-in cursor-pointer"
                 style={{ animationDelay: `${i * 60}ms` }}
+                onClick={() => navigate(`/e-player-cards/${player.id}`)}
               >
                 <EPlayerCard player={player} />
               </div>
