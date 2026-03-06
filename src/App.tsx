@@ -116,6 +116,7 @@ const App = () => (
               <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
             </Route>
             
+            <Route path="/ticket-sales" element={<Layout><TicketSales /></Layout>} />
             <Route path="/e-player-cards" element={<Layout><EPlayerCards /></Layout>} />
             <Route path="/e-player-cards/:id" element={<Layout><EPlayerCardDetail /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

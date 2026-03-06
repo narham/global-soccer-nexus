@@ -13,6 +13,7 @@ import {
   Gavel,
   User,
   CreditCard,
+  Ticket,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
