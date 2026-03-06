@@ -138,7 +138,7 @@ const Auth = () => {
               user_id: data.user.id,
               requested_role: intendedRole as any,
               reason: reason,
-              requested_club_id: intendedRole === "admin_klub" ? selectedClubId : null,
+              requested_club_id: intendedRole === "admin_klub" && selectedClubId ? selectedClubId : null,
               status: "pending",
             });
 
