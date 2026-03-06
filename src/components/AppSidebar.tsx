@@ -13,6 +13,7 @@ import {
   Gavel,
   User,
   CreditCard,
+  Ticket,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
@@ -44,6 +45,7 @@ const menuItems = [
   { title: "Wasit", url: "/referees", icon: Gavel },
   { title: "Stadion", url: "/stadiums", icon: Building2 },
   { title: "E-Player Card", url: "/e-player-cards", icon: CreditCard },
+  { title: "Penjualan Tiket", url: "/ticket-sales", icon: Ticket },
 ];
 
 const adminMenuItems = [
@@ -106,9 +108,8 @@ export function AppSidebar() {
     }
     
     if (isPanitia) {
-      // Panitia can see: dashboard, competitions, matches, stadiums
       return menuItems.filter(item => 
-        ["/", "/competitions", "/matches", "/stadiums"].includes(item.url)
+        ["/", "/competitions", "/matches", "/stadiums", "/ticket-sales"].includes(item.url)
       );
     }
     

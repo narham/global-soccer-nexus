@@ -48,6 +48,8 @@ import PublicCompetitionDetailPage from "./pages/PublicCompetitionDetailPage";
 import InstallApp from "./pages/InstallApp";
 import EPlayerCards from "./pages/EPlayerCards";
 import EPlayerCardDetail from "./pages/EPlayerCardDetail";
+import TicketSales from "./pages/TicketSales";
+import PublicTicketPurchasePage from "./pages/PublicTicketPurchasePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +74,7 @@ const App = () => (
             <Route path="/public/clubs/:id" element={<PublicClubDetailPage />} />
             <Route path="/public/players/:id" element={<PublicPlayerDetailPage />} />
             <Route path="/public/competitions/:id" element={<PublicCompetitionDetailPage />} />
+            <Route path="/public/tickets" element={<PublicTicketPurchasePage />} />
             <Route path="/install" element={<InstallApp />} />
             
             {/* Auth Routes */}
@@ -113,6 +116,7 @@ const App = () => (
               <Route path="matches/:id" element={<PanitiaMatchDetailPage />} />
             </Route>
             
+            <Route path="/ticket-sales" element={<Layout><TicketSales /></Layout>} />
             <Route path="/e-player-cards" element={<Layout><EPlayerCards /></Layout>} />
             <Route path="/e-player-cards/:id" element={<Layout><EPlayerCardDetail /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
