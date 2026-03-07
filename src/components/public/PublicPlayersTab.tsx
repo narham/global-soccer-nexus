@@ -18,9 +18,9 @@ const PlayerStatRow = ({ stat, index, valueKey, valueLabel }: { stat: any; index
     <div className="flex items-center justify-center w-7 h-7">
       {index < 3 ? (
         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-          index === 0 ? 'bg-yellow-500/20 text-yellow-700' : 
-          index === 1 ? 'bg-gray-300/30 text-gray-600' : 
-          'bg-orange-400/20 text-orange-600'
+          index === 0 ? 'bg-secondary/30 text-secondary-foreground' : 
+          index === 1 ? 'bg-muted text-muted-foreground' : 
+          'bg-primary/15 text-primary'
         }`}>
           {index + 1}
         </div>
