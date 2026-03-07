@@ -5,9 +5,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Trophy, Target } from "lucide-react";
+import { Users, Trophy, Target, Search, BarChart3 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const PlayerStatRow = ({ stat, index, valueKey, valueLabel }: { stat: any; index: number; valueKey: string; valueLabel: string }) => (
+  <Link
+    to={`/public/players/${stat.player?.id}`}
+    className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group"
+  >
+    <div className="flex items-center justify-center w-7 h-7">
+      {index < 3 ? (
+        <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+          index === 0 ? 'bg-secondary/30 text-secondary-foreground' : 
+          index === 1 ? 'bg-muted text-muted-foreground' : 
+          'bg-primary/15 text-primary'
+        }`}>
+          {index + 1}
+        </div>
+      ) : (
+        <span className="text-sm text-muted-foreground font-medium">{index + 1}</span>
+      )}
+    </div>
+    <Avatar className="h-9 w-9 border border-border">
+      <AvatarImage src={stat.player?.photo_url || ""} alt={stat.player?.full_name} />
+      <AvatarFallback className="text-xs">{stat.player?.full_name?.substring(0, 2)}</AvatarFallback>
+    </Avatar>
+    <div className="flex-1 min-w-0">
+      <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">{stat.player?.full_name}</p>
+      <p className="text-xs text-muted-foreground truncate">
+        {stat.player?.current_club?.name || "Tanpa Klub"}
+      </p>
+    </div>
+    <div className="text-right shrink-0">
+      <p className="text-xl font-bold text-primary tabular-nums">{stat[valueKey] ?? 0}</p>
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{valueLabel}</p>
+    </div>
+  </Link>
+);
 
 export const PublicPlayersTab = () => {
   const [competitions, setCompetitions] = useState<any[]>([]);
@@ -73,7 +109,6 @@ export const PublicPlayersTab = () => {
         return;
       }
 
-      // Fetch club names separately
       if (data && data.length > 0) {
         const clubIds = [...new Set(data.map(s => s.player?.current_club_id).filter(Boolean))];
         const { data: clubs } = await supabase
@@ -116,100 +151,84 @@ export const PublicPlayersTab = () => {
   if (loading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-96 w-full" />
+        <Skeleton className="h-14 w-full rounded-xl" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-96 w-full rounded-xl" />
+          <Skeleton className="h-96 w-full rounded-xl" />
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Statistik Pemain
-              </CardTitle>
-              <CardDescription>Top skor dan assist terbaik</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
-                placeholder="Cari pemain..."
+                placeholder="Cari nama pemain..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-[200px]"
+                className="pl-9"
               />
-              <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-                <SelectTrigger className="w-[250px]">
-                  <SelectValue placeholder="Semua kompetisi" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Kompetisi</SelectItem>
-                  {competitions.map((comp) => (
-                    <SelectItem key={comp.id} value={comp.id}>
-                      {comp.name} ({comp.season})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
+            <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
+              <SelectTrigger className="w-full sm:w-[250px]">
+                <SelectValue placeholder="Semua kompetisi" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kompetisi</SelectItem>
+                {competitions.map((comp) => (
+                  <SelectItem key={comp.id} value={comp.id}>
+                    {comp.name} ({comp.season})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </CardHeader>
+        </CardContent>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Top Scorers */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Trophy className="h-4 w-4 text-yellow-500" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <div className="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                <Trophy className="h-4 w-4 text-yellow-600" />
+              </div>
               Top Pencetak Gol
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {loadingStats ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-7 w-7 rounded-full" />
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-1" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="h-6 w-8" />
+                  </div>
                 ))}
               </div>
             ) : topScorers.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Belum ada data statistik
-              </p>
+              <div className="flex flex-col items-center py-10">
+                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+                  <BarChart3 className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">Belum ada data statistik</p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1 -mx-3">
                 {topScorers.map((stat, index) => (
-                  <Link
-                    key={stat.id}
-                    to={`/public/players/${stat.player.id}`}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8">
-                      <Badge variant={index < 3 ? "default" : "outline"}>
-                        {index + 1}
-                      </Badge>
-                    </div>
-                    {stat.player?.photo_url && (
-                      <img 
-                        src={stat.player.photo_url} 
-                        alt={stat.player.full_name}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium">{stat.player?.full_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {stat.player?.current_club?.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{stat.goals}</p>
-                      <p className="text-xs text-muted-foreground">gol</p>
-                    </div>
-                  </Link>
+                  <PlayerStatRow key={stat.id} stat={stat} index={index} valueKey="goals" valueLabel="gol" />
                 ))}
               </div>
             )}
@@ -218,54 +237,40 @@ export const PublicPlayersTab = () => {
 
         {/* Top Assisters */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Target className="h-4 w-4 text-blue-500" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                <Target className="h-4 w-4 text-accent" />
+              </div>
               Top Assist
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {loadingStats ? (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <div key={i} className="flex items-center gap-3">
+                    <Skeleton className="h-7 w-7 rounded-full" />
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <div className="flex-1">
+                      <Skeleton className="h-4 w-32 mb-1" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                    <Skeleton className="h-6 w-8" />
+                  </div>
                 ))}
               </div>
             ) : topAssisters.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Belum ada data statistik
-              </p>
+              <div className="flex flex-col items-center py-10">
+                <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+                  <BarChart3 className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">Belum ada data statistik</p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1 -mx-3">
                 {topAssisters.map((stat, index) => (
-                  <Link
-                    key={stat.id}
-                    to={`/public/players/${stat.player.id}`}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8">
-                      <Badge variant={index < 3 ? "default" : "outline"}>
-                        {index + 1}
-                      </Badge>
-                    </div>
-                    {stat.player?.photo_url && (
-                      <img 
-                        src={stat.player.photo_url} 
-                        alt={stat.player.full_name}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="font-medium">{stat.player?.full_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {stat.player?.current_club?.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">{stat.assists}</p>
-                      <p className="text-xs text-muted-foreground">assist</p>
-                    </div>
-                  </Link>
+                  <PlayerStatRow key={stat.id} stat={stat} index={index} valueKey="assists" valueLabel="assist" />
                 ))}
               </div>
             )}

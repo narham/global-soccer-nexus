@@ -127,10 +127,14 @@ export const PublicStandingsTab = () => {
 
   if (competitions.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-center text-muted-foreground">
-            Belum ada kompetisi yang tersedia
+      <Card className="border-dashed border-2">
+        <CardContent className="flex flex-col items-center justify-center py-16">
+          <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-5">
+            <Trophy className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-lg font-semibold mb-2">Belum Ada Kompetisi</h3>
+          <p className="text-muted-foreground text-center text-sm max-w-sm">
+            Belum ada kompetisi yang tersedia saat ini
           </p>
         </CardContent>
       </Card>
@@ -152,18 +156,28 @@ export const PublicStandingsTab = () => {
       )}
       
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" />
-                Klasemen Kompetisi
-              </CardTitle>
-              <CardDescription>Lihat klasemen dan statistik tim</CardDescription>
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-5 w-5 text-primary" />
+                  Klasemen Kompetisi
+                </CardTitle>
+                <CardDescription>Lihat klasemen dan statistik tim</CardDescription>
+              </div>
+              {selectedCompetition && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to={`/public/competitions/${selectedCompetition}`}>
+                    <ExternalLink className="h-4 w-4 mr-1" />
+                    <span className="hidden sm:inline">Detail</span>
+                  </Link>
+                </Button>
+              )}
             </div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select value={selectedCompetition} onValueChange={setSelectedCompetition}>
-                <SelectTrigger className="w-[300px]">
+                <SelectTrigger className="w-full sm:w-[280px]">
                   <SelectValue placeholder="Pilih kompetisi" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,31 +188,19 @@ export const PublicStandingsTab = () => {
                   ))}
                 </SelectContent>
               </Select>
-              <div className="flex gap-1">
+              <div className="flex gap-1 flex-wrap">
                 {['all', 'ongoing', 'upcoming', 'finished'].map((s) => (
                   <Button
                     key={s}
                     variant={statusFilter === s ? "default" : "outline"}
                     size="sm"
                     onClick={() => setStatusFilter(s)}
-                    className="capitalize text-xs"
+                    className="text-xs"
                   >
                     {s === 'all' ? 'Semua' : s === 'ongoing' ? 'Berjalan' : s === 'upcoming' ? 'Akan Datang' : 'Selesai'}
                   </Button>
                 ))}
               </div>
-              {selectedCompetition && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                >
-                  <Link to={`/public/competitions/${selectedCompetition}`}>
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Detail
-                  </Link>
-                </Button>
-              )}
             </div>
           </div>
         </CardHeader>
