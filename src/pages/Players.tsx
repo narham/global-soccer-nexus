@@ -76,7 +76,7 @@ const Players = () => {
     if (isAdminFederasi) {
       fetchPendingPlayers();
     }
-  }, [isAdminKlub, isAdminFederasi, clubId]);
+  }, [isAdminKlub, isAdminFederasi, clubId, pagination.page]);
 
   const fetchPlayers = async () => {
     try {
@@ -85,22 +85,20 @@ const Players = () => {
         .select(`
           *,
           clubs:current_club_id (name)
-        `)
-        .order("full_name");
+        `, { count: "exact" })
+        .order("full_name")
+        .range(pagination.from, pagination.to);
 
       // For Admin Federasi, only fetch approved players in main tab
       if (isAdminFederasi) {
         query = query.eq("registration_status", "approved");
       }
 
-      // Filter is handled by RLS policies
-      // Admin Klub will only see their approved players + their own registrations
-      // Admin Federasi will see approved players in main tab
-      
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) throw error;
       setPlayers(data || []);
+      pagination.setTotalCount(count || 0);
     } catch (error: any) {
       toast({
         variant: "destructive",
