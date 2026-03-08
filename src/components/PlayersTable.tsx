@@ -167,7 +167,13 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">{player.nationality}</TableCell>
                   <TableCell className="hidden xl:table-cell">
-                    {calculateAge(player.date_of_birth)} tahun
+                    <span className="flex items-center gap-1.5">
+                      {calculateAge(player.date_of_birth)} thn
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${getAgeCategoryColor(getAgeCategory(player.date_of_birth))}`}>
+                        {getAgeCategory(player.date_of_birth)}
+                      </span>
+                    </span>
+                  </TableCell>
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Badge variant={getInjuryColor(player.injury_status)}>
