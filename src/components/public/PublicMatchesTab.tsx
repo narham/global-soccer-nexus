@@ -177,8 +177,8 @@ export const PublicMatchesTab = () => {
     }
   };
 
-  const liveMatches = matches.filter(m => m.status === "live");
-  const otherMatches = matches.filter(m => m.status !== "live");
+  const liveMatches = matches.filter(m => ["live", "first_half", "half_time", "second_half"].includes(m.status));
+  const otherMatches = matches.filter(m => !["live", "first_half", "half_time", "second_half"].includes(m.status));
 
   if (loading) {
     return (
