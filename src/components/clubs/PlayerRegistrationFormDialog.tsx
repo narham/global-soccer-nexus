@@ -77,6 +77,7 @@ export default function PlayerRegistrationFormDialog({
   useEffect(() => {
     if (open) {
       fetchPlayers();
+      fetchCompetition();
       if (registration) {
         form.reset({
           player_id: registration.player_id,
@@ -87,9 +88,19 @@ export default function PlayerRegistrationFormDialog({
           player_id: "",
           shirt_number: 1,
         });
+        setSelectedPlayerEligibility(null);
       }
     }
   }, [open, registration]);
+
+  const fetchCompetition = async () => {
+    const { data } = await supabase
+      .from("competitions")
+      .select("age_group, age_cutoff_date, start_date")
+      .eq("id", competitionId)
+      .maybeSingle();
+    setCompetition(data);
+  };
 
   const fetchPlayers = async () => {
     try {
