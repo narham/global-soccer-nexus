@@ -204,9 +204,9 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
             </div>
           </div>
 
-          {/* Final Score */}
+          {/* Score - HT & FT */}
           <div>
-            <h3 className="font-semibold mb-3 text-lg border-b pb-2">Final Score</h3>
+            <h3 className="font-semibold mb-3 text-lg border-b pb-2">Score</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-lg font-semibold">{match.home_club?.name}</p>
@@ -216,9 +216,17 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
                 <p className="text-5xl font-bold text-primary">
                   {match.home_score ?? 0} : {match.away_score ?? 0}
                 </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  {match.status === "finished" ? "FINAL" : "—"}
+                <p className="text-sm font-medium text-muted-foreground mt-1">
+                  {match.status === "finished" ? "FULL TIME (FT)" : "—"}
                 </p>
+                {match.half_time_home_score !== null && match.half_time_away_score !== null && (
+                  <div className="mt-3 p-2 rounded-md bg-muted/50">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Skor Babak 1 (HT)</p>
+                    <p className="text-xl font-bold text-foreground">
+                      {match.half_time_home_score} : {match.half_time_away_score}
+                    </p>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-lg font-semibold">{match.away_club?.name}</p>
