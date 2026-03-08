@@ -37,6 +37,7 @@ export function NotificationDropdown() {
       case "transfer": return "🔄";
       case "role_request": return "👤";
       case "match_assignment": return "🏟️";
+      case "match_status": return "📺";
       case "player_document": return "📄";
       default: return "🔔";
     }
