@@ -174,7 +174,6 @@ export const PlayersTable = ({ players, onRefresh }: PlayersTableProps) => {
                       </span>
                     </span>
                   </TableCell>
-                  </TableCell>
                   <TableCell className="hidden lg:table-cell">
                     <Badge variant={getInjuryColor(player.injury_status)}>
                       {getInjuryLabel(player.injury_status)}
