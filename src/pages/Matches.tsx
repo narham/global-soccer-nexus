@@ -19,6 +19,7 @@ const Matches = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const pagination = usePagination({ pageSize: 30 });
 
   useEffect(() => {
     fetchMatches();
