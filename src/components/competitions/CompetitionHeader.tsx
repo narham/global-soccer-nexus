@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Calendar, Users, PlaySquare } from "lucide-react";
+import { Trophy, Calendar, Users, PlaySquare, Baby } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
