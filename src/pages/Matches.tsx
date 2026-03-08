@@ -60,7 +60,14 @@ const Matches = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "first_half":
+      case "second_half":
+      case "extra_first_half":
+      case "extra_second_half":
+      case "penalty_shootout":
       case "live": return "destructive";
+      case "half_time":
+      case "extra_half_time": return "secondary";
       case "finished": return "default";
       case "scheduled": return "secondary";
       default: return "outline";
@@ -69,6 +76,13 @@ const Matches = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case "first_half": return "⚽ BABAK 1";
+      case "half_time": return "☕ HT";
+      case "second_half": return "⚽ BABAK 2";
+      case "extra_first_half": return "⏱️ ET 1";
+      case "extra_half_time": return "☕ ET HT";
+      case "extra_second_half": return "⏱️ ET 2";
+      case "penalty_shootout": return "🎯 PENALTI";
       case "live": return "LIVE";
       case "finished": return "Selesai";
       case "scheduled": return "Dijadwalkan";
