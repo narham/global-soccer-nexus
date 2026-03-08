@@ -58,7 +58,13 @@ export default function PlayerRegistrationFormDialog({
   onSuccess,
 }: PlayerRegistrationFormDialogProps) {
   const [players, setPlayers] = useState<any[]>([]);
+  const [competition, setCompetition] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [selectedPlayerEligibility, setSelectedPlayerEligibility] = useState<{
+    eligible: boolean;
+    message: string;
+    category: string;
+  } | null>(null);
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
