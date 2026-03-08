@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Upload, UserCheck, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { PlayersTable } from "@/components/PlayersTable";
 import { PendingPlayersTable } from "@/components/players/PendingPlayersTable";
 import { Skeleton } from "@/components/ui/skeleton";
