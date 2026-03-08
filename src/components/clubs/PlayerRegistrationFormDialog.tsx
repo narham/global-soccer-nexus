@@ -218,6 +218,11 @@ export default function PlayerRegistrationFormDialog({
           </DialogTitle>
           <DialogDescription>
             Daftarkan pemain klub ke kompetisi dengan nomor punggung yang ditentukan
+            {competition?.age_group && competition.age_group !== "none" && (
+              <Badge variant="outline" className="ml-2 text-xs">
+                {competition.age_group}
+              </Badge>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -229,16 +234,27 @@ export default function PlayerRegistrationFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Pemain</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={(v) => handlePlayerChange(v, field.onChange)} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih pemain" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {players.map((player) => (
-                        <SelectItem key={player.id} value={player.id}>
-                          {player.full_name} - {player.position}
+                      {players.map((player) => {
+                        const category = getAgeCategory(player.date_of_birth);
+                        const colorClass = getAgeCategoryColor(category);
+                        return (
+                          <SelectItem key={player.id} value={player.id}>
+                            <span className="flex items-center gap-2">
+                              {player.full_name} - {player.position}
+                              <span className={`text-xs px-1.5 py-0.5 rounded ${colorClass}`}>
+                                {category}
+                              </span>
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
                         </SelectItem>
                       ))}
                     </SelectContent>
