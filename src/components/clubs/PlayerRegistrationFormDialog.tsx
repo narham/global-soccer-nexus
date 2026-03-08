@@ -302,7 +302,7 @@ export default function PlayerRegistrationFormDialog({
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || (selectedPlayerEligibility !== null && !selectedPlayerEligibility.eligible)}>
                 {loading ? "Menyimpan..." : "Simpan"}
               </Button>
             </div>
