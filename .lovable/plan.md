@@ -1,116 +1,79 @@
 
 
-## E-Player Card Dashboard
+## Plan: Fitur Babak 1 dan Babak 2 di Modul Pertandingan
 
-A new dedicated page displaying player data as futuristic glass-morphism cards with neon borders, QR codes, swipe animations, and status indicators.
+### Masalah Saat Ini
+- Status pertandingan hanya: `scheduled → live → finished`
+- Tidak ada pembagian babak (Babak 1, Istirahat, Babak 2)
+- Skor babak pertama (`half_time_home_score`, `half_time_away_score`) sudah ada di database tapi tidak otomatis tercatat
+- Timeline events tidak dikelompokkan per babak
 
----
+### Perubahan yang Direncanakan
 
-### New Route
+#### 1. Database Migration - Tambah enum values
+Tambahkan status baru ke enum `match_status`:
+- `first_half` - Babak 1 sedang berjalan
+- `half_time` - Istirahat
+- `second_half` - Babak 2 sedang berjalan
 
-- **URL**: `/e-player-cards`
-- **Sidebar**: Add "E-Player Card" menu item under the main navigation (with CreditCard icon)
+Sehingga flow menjadi: `scheduled → first_half → half_time → second_half → finished`
 
----
+#### 2. MatchDetail.tsx - Tombol kontrol per fase
+Ganti tombol "Mulai Pertandingan" / "Akhiri Pertandingan" dengan flow bertahap:
+- `scheduled` → Tombol "Kick Off Babak 1"
+- `first_half` → Tombol "Akhiri Babak 1" (otomatis simpan skor half-time)
+- `half_time` → Tombol "Kick Off Babak 2"
+- `second_half` → Tombol "Akhiri Pertandingan"
+- Tampilkan badge fase saat ini (BABAK 1 / ISTIRAHAT / BABAK 2)
 
-### New Files to Create
+#### 3. MatchHeader.tsx - Tampilan skor per babak
+- Tampilkan skor babak pertama (HT) di bawah skor utama jika sudah tersedia
+- Tampilkan indikator fase saat ini (Babak 1 / Istirahat / Babak 2) dengan animasi pulse
 
-#### 1. `src/pages/EPlayerCards.tsx` - Dashboard Page
-- Fetches all approved players with their club data from the database
-- Search/filter bar (by name, club, position)
-- Responsive grid layout on desktop, swipeable carousel on mobile
-- Uses Embla Carousel (already installed) for swipe animation between cards
+#### 4. MatchEventsTab.tsx - Kelompokkan events per babak
+- Pisahkan timeline menjadi 2 section: "Babak 1 (0'-45')" dan "Babak 2 (46'-90+)"
+- Tambahkan separator visual "Istirahat / Half Time" di antara kedua babak
+- Summary statistik per babak
 
-#### 2. `src/components/players/EPlayerCard.tsx` - Individual Card Component
+#### 5. Update semua status labels
+Update `getStatusLabel` di seluruh komponen yang menampilkan status pertandingan:
+- `ClubMatchCard`, `CompetitionMatchesTab`, `MatchHeader`, `PublicMatchesTab`, `PublicLiveMatchesTab`
+- `first_half` → "Babak 1"
+- `half_time` → "Istirahat"  
+- `second_half` → "Babak 2"
 
-**Glass Card Design:**
-- `backdrop-blur-xl bg-white/10 border border-white/20` glass-morphism effect
-- Neon border glow based on registration status:
-  - Green neon glow = VERIFIED (registration_status = 'approved')
-  - Yellow/amber neon glow = PENDING
-  - Red neon glow = REJECTED
-- Rounded corners with shadow and animation on hover
+#### 6. MatchReportTab.tsx - Skor per babak
+- Tampilkan "Skor Babak 1 (HT)" dan "Skor Akhir (FT)" secara terpisah di laporan
 
-**Card Layout:**
+### Detail Teknis
 
-```text
-+----------------------------------+
-|  [STATUS TAG]        [QR CODE]   |
-|                                  |
-|       ( Player Photo )           |
-|       (  Circular   )            |
-|                                  |
-|     PLAYER FULL NAME             |
-|     Club Name                    |
-|                                  |
-|  Position  |  U-XX  |  Flag      |
-|                                  |
-|  Province Origin                 |
-|  PID-XXXXXXXX                    |
-+----------------------------------+
+**Migration SQL:**
+```sql
+ALTER TYPE public.match_status ADD VALUE 'first_half';
+ALTER TYPE public.match_status ADD VALUE 'half_time';
+ALTER TYPE public.match_status ADD VALUE 'second_half';
 ```
 
-**Top Section**: Status badge (VERIFIED/PENDING/REJECTED) + dynamic QR code
-**Middle Section**: Circular player photo with fallback avatar, full name, club name
-**Bottom Section**: Position badge, age category (calculated from DOB: U12/U15/U17/U20/Senior), nationality flag emoji, province, player ID
-
-#### 3. `src/components/players/PlayerQRCode.tsx` - QR Code Component
-- Generate QR code dynamically using canvas-based rendering (no extra dependency needed -- use a lightweight inline SVG QR generator or a small utility)
-- QR data: URL to player's public profile (`/public/players/{id}`)
-- Small size (64x64px) displayed in card corner
-
----
-
-### Card Data Mapping
-
-| Card Field | Database Source |
-|---|---|
-| Player Photo | `players.photo_url` |
-| Full Name | `players.full_name` |
-| Club Name | `clubs.name` (via `current_club_id`) |
-| Age Category | Calculated from `players.date_of_birth` (U12/U15/U17/U20/Senior) |
-| Player ID | `PID-{players.id.substring(0,8).toUpperCase()}` |
-| Province | `players.nik_province` |
-| Position | `players.position` (GK/DF/MF/FW) |
-| Nationality Flag | Derived from `players.nationality` |
-| Status | `players.registration_status` |
-
----
-
-### Swipe Animation
-
-- Use existing `embla-carousel-react` for mobile swipe
-- Desktop: grid layout (3-4 cards per row) with hover scale animation
-- Mobile: horizontal carousel with snap-to-card behavior
-- Cards animate with `animate-fade-in` and `hover-scale` (existing utilities)
-
----
-
-### Styling Details
-
-**Neon Border CSS (added to index.css):**
-```css
-.neon-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5), inset 0 0 15px rgba(34, 197, 94, 0.1); border-color: rgb(34, 197, 94); }
-.neon-yellow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5), inset 0 0 15px rgba(234, 179, 8, 0.1); border-color: rgb(234, 179, 8); }
-.neon-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.1); border-color: rgb(239, 68, 68); }
+**Auto-save half-time score** (di `handleStatusChange` saat transisi `first_half → half_time`):
+```typescript
+if (newStatus === "half_time") {
+  await supabase.from("matches").update({
+    status: "half_time",
+    half_time_home_score: match.home_score,
+    half_time_away_score: match.away_score,
+  }).eq("id", id);
+}
 ```
 
-**Glass background:** Dark gradient background on the page to make glass cards stand out.
-
----
-
-### Files Modified
-
-1. **`src/App.tsx`** - Add route `/e-player-cards`
-2. **`src/components/AppSidebar.tsx`** - Add sidebar menu item
-3. **`src/index.css`** - Add neon glow CSS classes
-
-### Files Created
-
-1. **`src/pages/EPlayerCards.tsx`** - Dashboard page
-2. **`src/components/players/EPlayerCard.tsx`** - Glass card component
-3. **`src/components/players/PlayerQRCode.tsx`** - QR code generator utility
-
-### No Database Changes Required
-All data fields already exist in the `players` table.
+### File yang Diubah
+1. **Migration SQL** - Tambah enum values
+2. `src/pages/MatchDetail.tsx` - Flow tombol bertahap
+3. `src/components/matches/MatchHeader.tsx` - Skor HT + indikator fase
+4. `src/components/matches/MatchEventsTab.tsx` - Grouping per babak
+5. `src/components/matches/MatchReportTab.tsx` - Skor per babak
+6. `src/components/clubs/ClubMatchCard.tsx` - Status label update
+7. `src/components/clubs/ClubMatchManageDialog.tsx` - Status label
+8. `src/components/competitions/CompetitionMatchesTab.tsx` - Status label
+9. `src/components/public/PublicMatchesTab.tsx` - Status label
+10. `src/components/public/PublicLiveMatchesTab.tsx` - Status label + include new live statuses
 
