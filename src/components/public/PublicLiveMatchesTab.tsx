@@ -49,7 +49,7 @@ export const PublicLiveMatchesTab = () => {
           away_club:clubs!away_club_id(id, name, logo_url, short_name),
           competition:competitions(id, name)
         `)
-        .eq("status", "live")
+        .in("status", ["live", "first_half", "half_time", "second_half"])
         .order("match_date", { ascending: true });
 
       if (error) throw error;
