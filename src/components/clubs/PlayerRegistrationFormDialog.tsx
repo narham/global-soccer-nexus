@@ -255,10 +255,22 @@ export default function PlayerRegistrationFormDialog({
                           </SelectItem>
                         );
                       })}
-                        </SelectItem>
-                      ))}
                     </SelectContent>
                   </Select>
+                  {selectedPlayerEligibility && (
+                    <Alert variant={selectedPlayerEligibility.eligible ? "default" : "destructive"} className="mt-2 py-2">
+                      <div className="flex items-center gap-2">
+                        {selectedPlayerEligibility.eligible ? (
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4" />
+                        )}
+                        <AlertDescription className="text-sm">
+                          {selectedPlayerEligibility.message}
+                        </AlertDescription>
+                      </div>
+                    </Alert>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
