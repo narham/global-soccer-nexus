@@ -357,6 +357,8 @@ export type Database = {
       }
       competitions: {
         Row: {
+          age_cutoff_date: string | null
+          age_group: string | null
           approval_status: string
           approved_at: string | null
           approved_by: string | null
@@ -378,6 +380,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          age_cutoff_date?: string | null
+          age_group?: string | null
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
@@ -399,6 +403,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          age_cutoff_date?: string | null
+          age_group?: string | null
           approval_status?: string
           approved_at?: string | null
           approved_by?: string | null
