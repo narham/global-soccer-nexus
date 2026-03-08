@@ -26,8 +26,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { checkAgeEligibility, getAgeCategory, getAgeCategoryColor } from "@/lib/age-verification";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 
 const registrationSchema = z.object({
   player_id: z.string().min(1, "Pilih pemain"),
