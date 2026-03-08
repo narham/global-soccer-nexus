@@ -301,7 +301,22 @@ const Players = () => {
           </div>
         </div>
       ) : (
-        <PlayersTable players={filteredPlayers} onRefresh={handleRefresh} />
+        <>
+          <PlayersTable players={filteredPlayers} onRefresh={handleRefresh} />
+          <PaginationControls
+            page={pagination.page}
+            totalPages={pagination.totalPages}
+            totalCount={pagination.totalCount}
+            hasNext={pagination.hasNext}
+            hasPrev={pagination.hasPrev}
+            onNext={pagination.nextPage}
+            onPrev={pagination.prevPage}
+            onFirst={() => pagination.setPage(1)}
+            onLast={() => pagination.setPage(pagination.totalPages)}
+            from={pagination.from}
+            pageSize={pagination.pageSize}
+          />
+        </>
       )}
 
       <PlayerFormDialog
