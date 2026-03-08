@@ -24,6 +24,8 @@ const competitionSchema = z.object({
   num_groups: z.string().optional(),
   description: z.string().optional(),
   status: z.string().optional(),
+  age_group: z.string().optional(),
+  age_cutoff_date: z.string().optional(),
 });
 
 type CompetitionFormData = z.infer<typeof competitionSchema>;
