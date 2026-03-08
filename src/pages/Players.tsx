@@ -52,6 +52,7 @@ const Players = () => {
   const [clubFilter, setClubFilter] = useState<"all" | "with_club" | "free_agent">("all");
   const { toast } = useToast();
   const { isAdminKlub, isAdminFederasi, clubId } = useUserRole();
+  const pagination = usePagination({ pageSize: 30 });
 
   useEffect(() => {
     // Listen for transfer dialog trigger from PlayerFormDialog
