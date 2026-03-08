@@ -204,7 +204,7 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
             </div>
           </div>
 
-          {/* Score - HT & FT */}
+          {/* Score - HT, FT, AET, Penalties */}
           <div>
             <h3 className="font-semibold mb-3 text-lg border-b pb-2">Score</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -219,8 +219,30 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
                 <p className="text-sm font-medium text-muted-foreground mt-1">
                   {match.status === "finished" ? "FULL TIME (FT)" : "—"}
                 </p>
+
+                {/* Penalty Score */}
+                {match.penalty_home_score !== null && match.penalty_away_score !== null && (
+                  <div className="mt-3 p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 uppercase tracking-wide font-medium">Adu Penalti</p>
+                    <p className="text-xl font-bold text-amber-700 dark:text-amber-300">
+                      {match.penalty_home_score} : {match.penalty_away_score}
+                    </p>
+                  </div>
+                )}
+
+                {/* Extra Time Score */}
+                {match.extra_time_home_score !== null && match.extra_time_away_score !== null && (
+                  <div className="mt-2 p-2 rounded-md bg-muted/50">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Skor Perpanjangan Waktu (AET)</p>
+                    <p className="text-xl font-bold text-foreground">
+                      {match.extra_time_home_score} : {match.extra_time_away_score}
+                    </p>
+                  </div>
+                )}
+
+                {/* HT Score */}
                 {match.half_time_home_score !== null && match.half_time_away_score !== null && (
-                  <div className="mt-3 p-2 rounded-md bg-muted/50">
+                  <div className="mt-2 p-2 rounded-md bg-muted/50">
                     <p className="text-xs text-muted-foreground uppercase tracking-wide">Skor Babak 1 (HT)</p>
                     <p className="text-xl font-bold text-foreground">
                       {match.half_time_home_score} : {match.half_time_away_score}
@@ -242,6 +264,16 @@ export const MatchReportTab = ({ match }: MatchReportTabProps) => {
               <p>
                 <strong>Half-time Score:</strong> {match.half_time_home_score !== null ? `${match.half_time_home_score} : ${match.half_time_away_score}` : "Not available"}
               </p>
+              {match.extra_time_home_score !== null && (
+                <p>
+                  <strong>After Extra Time:</strong> {match.extra_time_home_score} : {match.extra_time_away_score}
+                </p>
+              )}
+              {match.penalty_home_score !== null && (
+                <p>
+                  <strong>Penalty Shootout:</strong> {match.penalty_home_score} : {match.penalty_away_score}
+                </p>
+              )}
               <p>
                 <strong>Weather Conditions:</strong> {match.weather_condition || "Clear, 28°C (to be recorded by match officials)"}
               </p>
