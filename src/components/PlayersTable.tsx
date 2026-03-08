@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, UserCheck } from "lucide-react";
+import { getAgeCategory, getAgeCategoryColor, calculateAge } from "@/lib/age-verification";
 import {
   Table,
   TableBody,
