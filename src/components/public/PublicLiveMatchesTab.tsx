@@ -22,7 +22,6 @@ export const PublicLiveMatchesTab = () => {
           event: '*',
           schema: 'public',
           table: 'matches',
-          filter: 'status=eq.live'
         },
         () => {
           fetchLiveMatches();
