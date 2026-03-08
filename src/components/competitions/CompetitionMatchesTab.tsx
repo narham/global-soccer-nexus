@@ -117,8 +117,12 @@ export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: Comp
       case "scheduled": return "secondary";
       case "first_half":
       case "second_half":
+      case "extra_first_half":
+      case "extra_second_half":
+      case "penalty_shootout":
       case "live": return "destructive";
-      case "half_time": return "outline";
+      case "half_time":
+      case "extra_half_time": return "outline";
       case "finished": return "default";
       case "postponed": return "outline";
       case "cancelled": return "outline";
@@ -132,6 +136,10 @@ export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: Comp
       case "first_half": return "Babak 1";
       case "half_time": return "Istirahat";
       case "second_half": return "Babak 2";
+      case "extra_first_half": return "ET Babak 1";
+      case "extra_half_time": return "Istirahat ET";
+      case "extra_second_half": return "ET Babak 2";
+      case "penalty_shootout": return "Adu Penalti";
       case "live": return "Live";
       case "finished": return "Selesai";
       case "postponed": return "Ditunda";
