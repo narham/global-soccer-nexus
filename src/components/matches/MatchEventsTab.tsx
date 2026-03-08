@@ -9,6 +9,7 @@ import { Target, CreditCard, RefreshCw, Video, XCircle, AlertCircle } from "luci
 import { EventFormDialog } from "./EventFormDialog";
 import { TableActions } from "../TableActions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 interface MatchEventsTabProps {
   matchId: string;
@@ -26,7 +27,6 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
   useEffect(() => {
     fetchEvents();
 
-    // Realtime subscription for events
     const channel = supabase
       .channel('match-events')
       .on(
@@ -124,6 +124,59 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
     return event.club_id === homeClub.id;
   };
 
+  const firstHalfEvents = events.filter(e => e.minute <= 45);
+  const secondHalfEvents = events.filter(e => e.minute > 45);
+
+  const renderEvent = (event: any) => {
+    const isHome = isHomeEvent(event);
+    return (
+      <div
+        key={event.id}
+        className={`flex items-center gap-4 p-4 rounded-lg border ${
+          isHome ? "bg-blue-50/50" : "bg-red-50/50"
+        }`}
+      >
+        {!isHome && <div className="flex-1" />}
+        
+        <div className={`flex items-center gap-3 ${!isHome ? "flex-row-reverse text-right" : ""}`}>
+          {getEventIcon(event.event_type)}
+          <div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="font-mono">
+                {event.minute}'
+              </Badge>
+              <span className="font-semibold">{getEventLabel(event.event_type)}</span>
+            </div>
+            {event.player && (
+              <p className="text-sm mt-1 text-green-700">
+                <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
+                {event.player.full_name}
+                {event.event_type === "substitution" && " (IN)"}
+              </p>
+            )}
+            {event.event_type === "substitution" && event.player_out && (
+              <p className="text-sm text-red-600">
+                <Badge variant="outline" className="mr-1">#{event.player_out.shirt_number}</Badge>
+                {event.player_out.full_name} (OUT)
+              </p>
+            )}
+            {event.description && (
+              <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+            )}
+          </div>
+        </div>
+
+        {isHome && <div className="flex-1" />}
+        
+        <TableActions
+          onEdit={() => { setSelectedEvent(event); setDialogOpen(true); }}
+          onDelete={() => handleDelete(event)}
+          itemName={`Event ${event.minute}'`}
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -152,56 +205,41 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
             Belum ada event dalam pertandingan ini
           </div>
         ) : (
-          <div className="space-y-3">
-            {events.map((event) => {
-              const isHome = isHomeEvent(event);
-              return (
-                <div
-                  key={event.id}
-                  className={`flex items-center gap-4 p-4 rounded-lg border ${
-                    isHome ? "bg-blue-50/50" : "bg-red-50/50"
-                  }`}
-                >
-                  {!isHome && <div className="flex-1" />}
-                  
-                  <div className={`flex items-center gap-3 ${!isHome ? "flex-row-reverse text-right" : ""}`}>
-                    {getEventIcon(event.event_type)}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="font-mono">
-                          {event.minute}'
-                        </Badge>
-                        <span className="font-semibold">{getEventLabel(event.event_type)}</span>
-                      </div>
-                      {event.player && (
-                        <p className="text-sm mt-1 text-green-700">
-                          <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
-                          {event.player.full_name}
-                          {event.event_type === "substitution" && " (IN)"}
-                        </p>
-                      )}
-                      {event.event_type === "substitution" && event.player_out && (
-                        <p className="text-sm text-red-600">
-                          <Badge variant="outline" className="mr-1">#{event.player_out.shirt_number}</Badge>
-                          {event.player_out.full_name} (OUT)
-                        </p>
-                      )}
-                      {event.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
-                      )}
-                    </div>
-                  </div>
+          <div className="space-y-4">
+            {/* Babak 1 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-sm">Babak 1 (0' - 45')</Badge>
+                <span className="text-xs text-muted-foreground">{firstHalfEvents.length} events</span>
+              </div>
+              {firstHalfEvents.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada event di Babak 1</p>
+              ) : (
+                firstHalfEvents.map(renderEvent)
+              )}
+            </div>
 
-                  {isHome && <div className="flex-1" />}
-                  
-                  <TableActions
-                    onEdit={() => { setSelectedEvent(event); setDialogOpen(true); }}
-                    onDelete={() => handleDelete(event)}
-                    itemName={`Event ${event.minute}'`}
-                  />
-                </div>
-              );
-            })}
+            {/* Half Time Separator */}
+            <div className="flex items-center gap-4 py-2">
+              <Separator className="flex-1" />
+              <Badge variant="outline" className="border-amber-500 text-amber-600 px-4 py-1">
+                ☕ Istirahat / Half Time
+              </Badge>
+              <Separator className="flex-1" />
+            </div>
+
+            {/* Babak 2 */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="text-sm">Babak 2 (46' - 90+)</Badge>
+                <span className="text-xs text-muted-foreground">{secondHalfEvents.length} events</span>
+              </div>
+              {secondHalfEvents.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada event di Babak 2</p>
+              ) : (
+                secondHalfEvents.map(renderEvent)
+              )}
+            </div>
           </div>
         )}
       </Card>

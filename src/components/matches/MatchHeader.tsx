@@ -11,7 +11,10 @@ interface MatchHeaderProps {
 export const MatchHeader = ({ match }: MatchHeaderProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "first_half":
+      case "second_half":
       case "live": return "destructive";
+      case "half_time": return "outline";
       case "finished": return "default";
       case "scheduled": return "secondary";
       default: return "outline";
@@ -20,6 +23,9 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
+      case "first_half": return "Babak 1";
+      case "half_time": return "Istirahat";
+      case "second_half": return "Babak 2";
       case "live": return "LIVE";
       case "finished": return "Selesai";
       case "scheduled": return "Dijadwalkan";
@@ -28,6 +34,9 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
       default: return status;
     }
   };
+
+  const isLive = ["first_half", "second_half", "live"].includes(match.status);
+  const showHtScore = match.half_time_home_score !== null && match.half_time_away_score !== null;
 
   return (
     <Card className="p-6">
@@ -40,7 +49,7 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
             {match.round && <Badge variant="outline">{match.round}</Badge>}
             {match.group_name && <Badge variant="outline">Grup {match.group_name}</Badge>}
           </div>
-          <Badge variant={getStatusColor(match.status)} className="text-lg px-4 py-2">
+          <Badge variant={getStatusColor(match.status)} className={`text-lg px-4 py-2 ${isLive ? "animate-pulse" : ""}`}>
             {getStatusLabel(match.status)}
           </Badge>
         </div>
@@ -69,10 +78,20 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
               <span className="text-muted-foreground">:</span>
               <span className="text-primary">{match.away_score ?? "—"}</span>
             </div>
-            {match.status === "live" && (
+            {showHtScore && (
+              <p className="text-sm text-muted-foreground mt-2">
+                HT: {match.half_time_home_score} - {match.half_time_away_score}
+              </p>
+            )}
+            {isLive && (
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4 animate-pulse" />
-                <span>Match in progress</span>
+                <span>{getStatusLabel(match.status)}</span>
+              </div>
+            )}
+            {match.status === "half_time" && (
+              <div className="mt-2 flex items-center gap-2 text-sm text-amber-600">
+                <span>☕ Istirahat</span>
               </div>
             )}
           </div>

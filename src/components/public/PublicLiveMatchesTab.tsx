@@ -104,9 +104,9 @@ export const PublicLiveMatchesTab = () => {
               <span className="text-xs font-medium text-muted-foreground truncate">
                 {match.competition?.name}
               </span>
-              <Badge variant="destructive" className="animate-pulse text-xs gap-1">
+              <Badge variant="destructive" className={`text-xs gap-1 ${match.status === "half_time" ? "" : "animate-pulse"}`}>
                 <span className="w-1.5 h-1.5 bg-white rounded-full" />
-                LIVE
+                {match.status === "first_half" ? "BABAK 1" : match.status === "half_time" ? "ISTIRAHAT" : match.status === "second_half" ? "BABAK 2" : "LIVE"}
               </Badge>
             </div>
           </CardHeader>

@@ -68,7 +68,7 @@ const MatchCard = ({ match, isLive = false }: { match: any; isLive?: boolean }) 
           </Link>
           
           <div className="text-center shrink-0 min-w-[60px]">
-            {match.status === "finished" || match.status === "live" ? (
+            {["finished", "live", "first_half", "half_time", "second_half"].includes(match.status) ? (
               <div className="text-xl sm:text-2xl font-bold">
                 {match.home_score} - {match.away_score}
               </div>

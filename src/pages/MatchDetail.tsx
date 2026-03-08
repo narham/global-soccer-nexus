@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play, PauseCircle, CheckCircle } from "lucide-react";
+import { ArrowLeft, Play, PauseCircle, CheckCircle, Timer } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MatchHeader } from "@/components/matches/MatchHeader";
@@ -26,7 +26,6 @@ const MatchDetail = () => {
     if (id) {
       fetchMatch();
       
-      // Setup realtime subscription for match updates
       const channel = supabase
         .channel('match-updates')
         .on(
@@ -78,16 +77,31 @@ const MatchDetail = () => {
 
   const handleStatusChange = async (newStatus: string) => {
     try {
+      const updateData: any = { status: newStatus as any };
+
+      // Auto-save half-time score when transitioning to half_time
+      if (newStatus === "half_time") {
+        updateData.half_time_home_score = match.home_score ?? 0;
+        updateData.half_time_away_score = match.away_score ?? 0;
+      }
+
       const { error } = await supabase
         .from("matches")
-        .update({ status: newStatus as any })
+        .update(updateData)
         .eq("id", id);
 
       if (error) throw error;
 
+      const statusMessages: Record<string, string> = {
+        first_half: "Babak 1 dimulai",
+        half_time: "Babak 1 selesai — Istirahat",
+        second_half: "Babak 2 dimulai",
+        finished: "Pertandingan selesai",
+      };
+
       toast({
         title: "Status diupdate",
-        description: `Pertandingan ${newStatus === "live" ? "dimulai" : newStatus === "finished" ? "selesai" : "dijadwalkan"}`,
+        description: statusMessages[newStatus] || `Status: ${newStatus}`,
       });
       
       fetchMatch();
@@ -111,9 +125,58 @@ const MatchDetail = () => {
 
   if (!match) return null;
 
-  const canStart = match.status === "scheduled";
-  const canFinish = match.status === "live";
-  const isLive = match.status === "live";
+  const status = match.status;
+  const isLive = status === "first_half" || status === "second_half";
+
+  const getPhaseButton = () => {
+    switch (status) {
+      case "scheduled":
+        return (
+          <Button onClick={() => handleStatusChange("first_half")}>
+            <Play className="mr-2 h-4 w-4" />
+            Kick Off Babak 1
+          </Button>
+        );
+      case "first_half":
+        return (
+          <Button onClick={() => handleStatusChange("half_time")} variant="secondary">
+            <PauseCircle className="mr-2 h-4 w-4" />
+            Akhiri Babak 1
+          </Button>
+        );
+      case "half_time":
+        return (
+          <Button onClick={() => handleStatusChange("second_half")}>
+            <Play className="mr-2 h-4 w-4" />
+            Kick Off Babak 2
+          </Button>
+        );
+      case "second_half":
+        return (
+          <Button onClick={() => handleStatusChange("finished")} variant="secondary">
+            <CheckCircle className="mr-2 h-4 w-4" />
+            Akhiri Pertandingan
+          </Button>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getPhaseBadge = () => {
+    switch (status) {
+      case "first_half":
+        return <Badge variant="destructive" className="animate-pulse">⚽ BABAK 1</Badge>;
+      case "half_time":
+        return <Badge variant="outline" className="border-amber-500 text-amber-600">☕ ISTIRAHAT</Badge>;
+      case "second_half":
+        return <Badge variant="destructive" className="animate-pulse">⚽ BABAK 2</Badge>;
+      case "live":
+        return <Badge variant="destructive" className="animate-pulse">LIVE</Badge>;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -124,23 +187,8 @@ const MatchDetail = () => {
         </Button>
         
         <div className="flex items-center gap-2">
-          {isLive && (
-            <Badge variant="destructive" className="animate-pulse">
-              LIVE
-            </Badge>
-          )}
-          {canStart && (
-            <Button onClick={() => handleStatusChange("live")}>
-              <Play className="mr-2 h-4 w-4" />
-              Mulai Pertandingan
-            </Button>
-          )}
-          {canFinish && (
-            <Button onClick={() => handleStatusChange("finished")} variant="secondary">
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Akhiri Pertandingan
-            </Button>
-          )}
+          {getPhaseBadge()}
+          {getPhaseButton()}
         </div>
       </div>
 

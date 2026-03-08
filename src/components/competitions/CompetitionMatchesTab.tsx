@@ -115,7 +115,10 @@ export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: Comp
   const getStatusColor = (status: string) => {
     switch (status) {
       case "scheduled": return "secondary";
+      case "first_half":
+      case "second_half":
       case "live": return "destructive";
+      case "half_time": return "outline";
       case "finished": return "default";
       case "postponed": return "outline";
       case "cancelled": return "outline";
@@ -126,6 +129,9 @@ export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: Comp
   const getStatusLabel = (status: string) => {
     switch (status) {
       case "scheduled": return "Dijadwalkan";
+      case "first_half": return "Babak 1";
+      case "half_time": return "Istirahat";
+      case "second_half": return "Babak 2";
       case "live": return "Live";
       case "finished": return "Selesai";
       case "postponed": return "Ditunda";
