@@ -23,23 +23,24 @@ const Matches = () => {
 
   useEffect(() => {
     fetchMatches();
-  }, []);
+  }, [pagination.page]);
 
   const fetchMatches = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from("matches")
         .select(`
           *,
           competition:competitions(name, type),
           home_club:clubs!matches_home_club_id_fkey(name, logo_url),
           away_club:clubs!matches_away_club_id_fkey(name, logo_url)
-        `)
+        `, { count: "exact" })
         .order("match_date", { ascending: false })
-        .limit(50);
+        .range(pagination.from, pagination.to);
 
       if (error) throw error;
       setMatches(data || []);
+      pagination.setTotalCount(count || 0);
     } catch (error: any) {
       toast({
         variant: "destructive",
