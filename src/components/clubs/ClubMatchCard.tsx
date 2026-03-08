@@ -90,6 +90,16 @@ export const ClubMatchCard = ({ match, clubId, onManage }: ClubMatchCardProps) =
             <div className="text-3xl font-bold">
               {match.home_score ?? "-"} : {match.away_score ?? "-"}
             </div>
+            {match.penalty_home_score !== null && match.penalty_away_score !== null && (
+              <div className="text-sm font-semibold text-amber-600">
+                (Pen: {match.penalty_home_score} - {match.penalty_away_score})
+              </div>
+            )}
+            {match.extra_time_home_score !== null && match.extra_time_away_score !== null && (
+              <div className="text-sm text-muted-foreground">
+                (AET: {match.extra_time_home_score} - {match.extra_time_away_score})
+              </div>
+            )}
             {match.half_time_home_score !== null && (
               <div className="text-sm text-muted-foreground">
                 ({match.half_time_home_score} - {match.half_time_away_score} HT)
