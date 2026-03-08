@@ -239,8 +239,8 @@ export const CompetitionMatchesTab = ({ competitionId, competitionFormat }: Comp
                   <TableCell className="hidden md:table-cell">{match.venue || "—"}</TableCell>
                   <TableCell className="hidden lg:table-cell">{match.referee_name || "—"}</TableCell>
                   <TableCell className="text-center">
-                    {match.status === "finished" ? (
-                      <span className="font-bold">{match.home_score} - {match.away_score}</span>
+                    {["finished", "first_half", "half_time", "second_half", "live"].includes(match.status) ? (
+                      <span className="font-bold">{match.home_score ?? 0} - {match.away_score ?? 0}</span>
                     ) : (
                       <span className="text-muted-foreground">— : —</span>
                     )}

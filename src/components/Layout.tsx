@@ -8,7 +8,6 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 import { CommandPalette } from "@/components/navigation/CommandPalette";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 
-
 interface LayoutProps {
   children: ReactNode;
 }
@@ -19,17 +18,17 @@ export function Layout({ children }: LayoutProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    // Set up auth state listener FIRST (before getSession)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
-        if (!session) {
+        if (event === "SIGNED_OUT" || !session) {
           navigate("/auth");
         }
       }
     );
 
-    // Check for existing session
+    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (!session) {
