@@ -55,6 +55,8 @@ export const CompetitionFormDialog = ({ open, onOpenChange, competition, onSucce
       num_groups: "",
       description: "",
       status: "upcoming",
+      age_group: "",
+      age_cutoff_date: "",
     },
   });
 
