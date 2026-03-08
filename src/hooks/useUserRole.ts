@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface UserRoleData {
   role: string | null;
+  roles: string[];
   clubId: string | null;
+  clubIds: string[];
   isAdminFederasi: boolean;
   isAdminKlub: boolean;
   isPanitia: boolean;
@@ -14,7 +16,9 @@ interface UserRoleData {
 export function useUserRole(): UserRoleData {
   const [roleData, setRoleData] = useState<UserRoleData>({
     role: null,
+    roles: [],
     clubId: null,
+    clubIds: [],
     isAdminFederasi: false,
     isAdminKlub: false,
     isPanitia: false,
@@ -27,7 +31,9 @@ export function useUserRole(): UserRoleData {
       if (!userId) {
         setRoleData({
           role: null,
+          roles: [],
           clubId: null,
+          clubIds: [],
           isAdminFederasi: false,
           isAdminKlub: false,
           isPanitia: false,
@@ -41,14 +47,15 @@ export function useUserRole(): UserRoleData {
         const { data, error } = await supabase
           .from("user_roles")
           .select("role, club_id")
-          .eq("user_id", userId)
-          .maybeSingle();
+          .eq("user_id", userId);
 
         if (error) {
           console.error("Error fetching user role:", error);
           setRoleData({
             role: null,
+            roles: [],
             clubId: null,
+            clubIds: [],
             isAdminFederasi: false,
             isAdminKlub: false,
             isPanitia: false,
@@ -58,20 +65,31 @@ export function useUserRole(): UserRoleData {
           return;
         }
 
+        const roles = data?.map((r) => r.role) || [];
+        const clubIds = data?.filter((r) => r.club_id).map((r) => r.club_id as string) || [];
+
+        // Primary role = first role (for backward compatibility)
+        const primaryRole = roles.length > 0 ? roles[0] : null;
+        const primaryClubId = clubIds.length > 0 ? clubIds[0] : null;
+
         setRoleData({
-          role: data?.role || null,
-          clubId: data?.club_id || null,
-          isAdminFederasi: data?.role === "admin_federasi",
-          isAdminKlub: data?.role === "admin_klub",
-          isPanitia: data?.role === "panitia",
-          isWasit: data?.role === "wasit",
+          role: primaryRole,
+          roles,
+          clubId: primaryClubId,
+          clubIds,
+          isAdminFederasi: roles.includes("admin_federasi"),
+          isAdminKlub: roles.includes("admin_klub"),
+          isPanitia: roles.includes("panitia"),
+          isWasit: roles.includes("wasit"),
           loading: false,
         });
       } catch (error) {
         console.error("Error in fetchUserRole:", error);
         setRoleData({
           role: null,
+          roles: [],
           clubId: null,
+          clubIds: [],
           isAdminFederasi: false,
           isAdminKlub: false,
           isPanitia: false,
