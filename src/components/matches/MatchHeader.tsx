@@ -13,8 +13,12 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
     switch (status) {
       case "first_half":
       case "second_half":
+      case "extra_first_half":
+      case "extra_second_half":
+      case "penalty_shootout":
       case "live": return "destructive";
-      case "half_time": return "outline";
+      case "half_time":
+      case "extra_half_time": return "outline";
       case "finished": return "default";
       case "scheduled": return "secondary";
       default: return "outline";
@@ -26,6 +30,10 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
       case "first_half": return "Babak 1";
       case "half_time": return "Istirahat";
       case "second_half": return "Babak 2";
+      case "extra_first_half": return "ET Babak 1";
+      case "extra_half_time": return "Istirahat ET";
+      case "extra_second_half": return "ET Babak 2";
+      case "penalty_shootout": return "Adu Penalti";
       case "live": return "LIVE";
       case "finished": return "Selesai";
       case "scheduled": return "Dijadwalkan";
@@ -35,15 +43,19 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
     }
   };
 
-  const isLive = ["first_half", "second_half", "live"].includes(match.status);
+  const isLive = ["first_half", "second_half", "extra_first_half", "extra_second_half", "penalty_shootout", "live"].includes(match.status);
   const showHtScore = match.half_time_home_score !== null && match.half_time_away_score !== null;
+  const showEtScore = match.extra_time_home_score !== null && match.extra_time_away_score !== null;
+  const showPenaltyScore = match.penalty_home_score !== null && match.penalty_away_score !== null;
+  const isExtraTime = ["extra_first_half", "extra_half_time", "extra_second_half"].includes(match.status);
+  const isPenalty = match.status === "penalty_shootout";
 
   return (
     <Card className="p-6">
       <div className="space-y-6">
         {/* Competition & Status */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="outline">{match.competition?.name}</Badge>
             {match.matchday && <Badge variant="outline">Matchday {match.matchday}</Badge>}
             {match.round && <Badge variant="outline">{match.round}</Badge>}
@@ -78,20 +90,41 @@ export const MatchHeader = ({ match }: MatchHeaderProps) => {
               <span className="text-muted-foreground">:</span>
               <span className="text-primary">{match.away_score ?? "—"}</span>
             </div>
+
+            {/* Penalty Score */}
+            {showPenaltyScore && (
+              <div className="mt-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-600 dark:text-amber-400 uppercase tracking-wide font-medium">Penalti</p>
+                <p className="text-lg font-bold text-amber-700 dark:text-amber-300">
+                  {match.penalty_home_score} - {match.penalty_away_score}
+                </p>
+              </div>
+            )}
+
+            {/* Extra Time Score */}
+            {showEtScore && (
+              <p className="text-sm text-muted-foreground mt-1">
+                AET: {match.extra_time_home_score} - {match.extra_time_away_score}
+              </p>
+            )}
+
+            {/* HT Score */}
             {showHtScore && (
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-sm text-muted-foreground mt-1">
                 HT: {match.half_time_home_score} - {match.half_time_away_score}
               </p>
             )}
+
+            {/* Live indicator */}
             {isLive && (
               <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4 animate-pulse" />
                 <span>{getStatusLabel(match.status)}</span>
               </div>
             )}
-            {match.status === "half_time" && (
+            {(match.status === "half_time" || match.status === "extra_half_time") && (
               <div className="mt-2 flex items-center gap-2 text-sm text-amber-600">
-                <span>☕ Istirahat</span>
+                <span>☕ {match.status === "extra_half_time" ? "Istirahat ET" : "Istirahat"}</span>
               </div>
             )}
           </div>

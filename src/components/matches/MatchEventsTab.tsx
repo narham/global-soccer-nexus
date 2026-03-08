@@ -54,8 +54,8 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
         .from("match_events")
         .select(`
           *,
-          player:players!player_id(full_name, shirt_number, position),
-          player_out:players!player_out_id(full_name, shirt_number, position),
+          player:players!match_events_player_id_fkey(full_name, shirt_number, position),
+          player_out:players!match_events_player_out_id_fkey(full_name, shirt_number, position),
           club:clubs(name, home_color)
         `)
         .eq("match_id", matchId)
@@ -124,8 +124,14 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
     return event.club_id === homeClub.id;
   };
 
+  // Group events by period
   const firstHalfEvents = events.filter(e => e.minute <= 45);
-  const secondHalfEvents = events.filter(e => e.minute > 45);
+  const secondHalfEvents = events.filter(e => e.minute > 45 && e.minute <= 90);
+  const extraFirstHalfEvents = events.filter(e => e.minute > 90 && e.minute <= 105);
+  const extraSecondHalfEvents = events.filter(e => e.minute > 105 && e.minute <= 120);
+  const beyondEvents = events.filter(e => e.minute > 120);
+
+  const hasExtraTimeEvents = extraFirstHalfEvents.length > 0 || extraSecondHalfEvents.length > 0 || beyondEvents.length > 0;
 
   const renderEvent = (event: any) => {
     const isHome = isHomeEvent(event);
@@ -133,7 +139,7 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
       <div
         key={event.id}
         className={`flex items-center gap-4 p-4 rounded-lg border ${
-          isHome ? "bg-blue-50/50" : "bg-red-50/50"
+          isHome ? "bg-blue-50/50 dark:bg-blue-950/20" : "bg-red-50/50 dark:bg-red-950/20"
         }`}
       >
         {!isHome && <div className="flex-1" />}
@@ -148,14 +154,14 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
               <span className="font-semibold">{getEventLabel(event.event_type)}</span>
             </div>
             {event.player && (
-              <p className="text-sm mt-1 text-green-700">
+              <p className="text-sm mt-1 text-green-700 dark:text-green-400">
                 <Badge variant="secondary" className="mr-1">#{event.player.shirt_number}</Badge>
                 {event.player.full_name}
                 {event.event_type === "substitution" && " (IN)"}
               </p>
             )}
             {event.event_type === "substitution" && event.player_out && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-red-600 dark:text-red-400">
                 <Badge variant="outline" className="mr-1">#{event.player_out.shirt_number}</Badge>
                 {event.player_out.full_name} (OUT)
               </p>
@@ -176,6 +182,30 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
       </div>
     );
   };
+
+  const renderSection = (label: string, sectionEvents: any[], badgeVariant: "secondary" | "outline" | "destructive" = "secondary") => (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Badge variant={badgeVariant} className="text-sm">{label}</Badge>
+        <span className="text-xs text-muted-foreground">{sectionEvents.length} events</span>
+      </div>
+      {sectionEvents.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">Tidak ada event</p>
+      ) : (
+        sectionEvents.map(renderEvent)
+      )}
+    </div>
+  );
+
+  const renderSeparator = (label: string, icon: string = "☕") => (
+    <div className="flex items-center gap-4 py-2">
+      <Separator className="flex-1" />
+      <Badge variant="outline" className="border-amber-500 text-amber-600 px-4 py-1">
+        {icon} {label}
+      </Badge>
+      <Separator className="flex-1" />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -207,39 +237,35 @@ export const MatchEventsTab = ({ matchId, homeClub, awayClub }: MatchEventsTabPr
         ) : (
           <div className="space-y-4">
             {/* Babak 1 */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-sm">Babak 1 (0' - 45')</Badge>
-                <span className="text-xs text-muted-foreground">{firstHalfEvents.length} events</span>
-              </div>
-              {firstHalfEvents.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada event di Babak 1</p>
-              ) : (
-                firstHalfEvents.map(renderEvent)
-              )}
-            </div>
+            {renderSection("Babak 1 (0' - 45')", firstHalfEvents)}
 
             {/* Half Time Separator */}
-            <div className="flex items-center gap-4 py-2">
-              <Separator className="flex-1" />
-              <Badge variant="outline" className="border-amber-500 text-amber-600 px-4 py-1">
-                ☕ Istirahat / Half Time
-              </Badge>
-              <Separator className="flex-1" />
-            </div>
+            {renderSeparator("Istirahat / Half Time")}
 
             {/* Babak 2 */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-sm">Babak 2 (46' - 90+)</Badge>
-                <span className="text-xs text-muted-foreground">{secondHalfEvents.length} events</span>
-              </div>
-              {secondHalfEvents.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">Tidak ada event di Babak 2</p>
-              ) : (
-                secondHalfEvents.map(renderEvent)
-              )}
-            </div>
+            {renderSection("Babak 2 (46' - 90')", secondHalfEvents)}
+
+            {/* Extra Time sections - only show if there are events */}
+            {hasExtraTimeEvents && (
+              <>
+                {renderSeparator("Perpanjangan Waktu / Extra Time", "⏱️")}
+
+                {/* ET Babak 1 */}
+                {renderSection("ET Babak 1 (91' - 105')", extraFirstHalfEvents, "destructive")}
+
+                {renderSeparator("Istirahat ET")}
+
+                {/* ET Babak 2 */}
+                {renderSection("ET Babak 2 (106' - 120')", extraSecondHalfEvents, "destructive")}
+
+                {beyondEvents.length > 0 && (
+                  <>
+                    {renderSeparator("Adu Penalti / Penalty Shootout", "🎯")}
+                    {renderSection("Setelah 120' / Adu Penalti", beyondEvents, "outline")}
+                  </>
+                )}
+              </>
+            )}
           </div>
         )}
       </Card>
