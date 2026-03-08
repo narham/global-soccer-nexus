@@ -21,9 +21,13 @@ export const ClubMatchCard = ({ match, clubId, onManage }: ClubMatchCardProps) =
     switch (status) {
       case "first_half":
       case "second_half":
+      case "extra_first_half":
+      case "extra_second_half":
+      case "penalty_shootout":
       case "live":
         return "destructive";
       case "half_time":
+      case "extra_half_time":
         return "outline";
       case "finished":
         return "secondary";
@@ -40,6 +44,10 @@ export const ClubMatchCard = ({ match, clubId, onManage }: ClubMatchCardProps) =
       case "first_half": return "Babak 1";
       case "half_time": return "Istirahat";
       case "second_half": return "Babak 2";
+      case "extra_first_half": return "ET Babak 1";
+      case "extra_half_time": return "Istirahat ET";
+      case "extra_second_half": return "ET Babak 2";
+      case "penalty_shootout": return "Adu Penalti";
       case "live": return "LIVE";
       case "finished": return "Selesai";
       case "scheduled": return "Dijadwalkan";
