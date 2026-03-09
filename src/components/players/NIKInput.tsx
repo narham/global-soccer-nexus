@@ -4,7 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { validateNIK } from "@/lib/nik-validator";
-import { AlertCircle, CheckCircle2, User, MapPin, Calendar } from "lucide-react";
+import { loadDistricts, getDistrictName } from "@/lib/indonesia-districts";
+import { AlertCircle, CheckCircle2, User, MapPin, Calendar, Building2 } from "lucide-react";
 
 interface NIKInputProps {
   value: string;
@@ -15,6 +16,13 @@ interface NIKInputProps {
 
 export function NIKInput({ value, onChange, onValidationChange, disabled }: NIKInputProps) {
   const [validation, setValidation] = useState(validateNIK(value));
+  const [districtName, setDistrictName] = useState<string | null>(null);
+  const [districtLoading, setDistrictLoading] = useState(false);
+
+  // Load district data once on mount
+  useEffect(() => {
+    loadDistricts();
+  }, []);
 
   useEffect(() => {
     const result = validateNIK(value);
@@ -22,6 +30,27 @@ export function NIKInput({ value, onChange, onValidationChange, disabled }: NIKI
     
     if (onValidationChange) {
       onValidationChange(result.isValid, result.info?.dateOfBirth);
+    }
+
+    // Resolve district name if valid
+    if (result.isValid && result.info) {
+      const distCode = result.info.districtCode;
+      const [prov, city, dist] = distCode.split(".");
+      
+      const cached = getDistrictName(prov, city, dist);
+      if (cached) {
+        setDistrictName(cached);
+      } else {
+        // Load and resolve
+        setDistrictLoading(true);
+        loadDistricts().then(map => {
+          const name = map.get(distCode) || null;
+          setDistrictName(name);
+          setDistrictLoading(false);
+        });
+      }
+    } else {
+      setDistrictName(null);
     }
   }, [value, onValidationChange]);
 
@@ -56,12 +85,30 @@ export function NIKInput({ value, onChange, onValidationChange, disabled }: NIKI
               <AlertDescription>
                 <div className="space-y-2 mt-1">
                   <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-3.5 w-3.5" />
-                    <span className="font-medium">Lokasi:</span>
-                    <span>{validation.info.province}, {validation.info.city}</span>
+                    <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="font-medium">Provinsi:</span>
+                    <span>{validation.info.province}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5" />
+                    <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+                    <span className="font-medium">Kab/Kota:</span>
+                    <span>{validation.info.city}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Building2 className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
+                    <span className="font-medium">Kecamatan:</span>
+                    {districtLoading ? (
+                      <span className="text-muted-foreground italic text-xs">Memuat...</span>
+                    ) : districtName ? (
+                      <span>{districtName}</span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">
+                        Kode {validation.info.districtCode}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-3.5 w-3.5 flex-shrink-0" />
                     <span className="font-medium">Tanggal Lahir:</span>
                     <span>
                       {validation.info.dateOfBirth.toLocaleDateString("id-ID", {
@@ -72,7 +119,7 @@ export function NIKInput({ value, onChange, onValidationChange, disabled }: NIKI
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <User className="h-3.5 w-3.5" />
+                    <User className="h-3.5 w-3.5 flex-shrink-0" />
                     <span className="font-medium">Jenis Kelamin:</span>
                     <Badge variant="outline" className="text-xs">
                       {validation.info.gender === "male" ? "Laki-laki" : "Perempuan"}
