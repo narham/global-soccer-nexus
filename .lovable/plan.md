@@ -1,116 +1,57 @@
 
 
-## E-Player Card Dashboard
+## Plan: Expand NIK City/Regency (Kabupaten/Kota) Extraction
 
-A new dedicated page displaying player data as futuristic glass-morphism cards with neon borders, QR codes, swipe animations, and status indicators.
+### Problem
+The current `indonesia-regions.ts` only has city data for 5 provinces (Jawa Barat, DKI Jakarta, Jawa Tengah, Jawa Timur, Bali). For NIK codes from other provinces (e.g., Sulawesi Selatan "73"), the city name falls back to generic "Kode 73.71" instead of showing the actual name like "Kota Makassar".
 
----
+### Solution
+Expand the `cities` array in `indonesia-regions.ts` to include kabupaten/kota data for **all 34 provinces** based on official BPS (Badan Pusat Statistik) codes.
 
-### New Route
+### Changes
 
-- **URL**: `/e-player-cards`
-- **Sidebar**: Add "E-Player Card" menu item under the main navigation (with CreditCard icon)
+**1. `src/lib/indonesia-regions.ts`** — Add comprehensive city/regency data for all provinces:
+- Aceh (11): ~23 kab/kota
+- Sumatera Utara (12): ~33 kab/kota
+- Sumatera Barat (13): ~19 kab/kota
+- Riau (14): ~12 kab/kota
+- Jambi (15): ~11 kab/kota
+- Sumatera Selatan (16): ~17 kab/kota
+- Bengkulu (17): ~10 kab/kota
+- Lampung (18): ~15 kab/kota
+- Kep. Bangka Belitung (19): ~7 kab/kota
+- Kep. Riau (21): ~7 kab/kota
+- Banten (36): ~8 kab/kota
+- NTB (52): ~10 kab/kota
+- NTT (53): ~22 kab/kota
+- Kalimantan Barat (61): ~14 kab/kota
+- Kalimantan Tengah (62): ~14 kab/kota
+- Kalimantan Selatan (63): ~13 kab/kota
+- Kalimantan Timur (64): ~10 kab/kota
+- Kalimantan Utara (65): ~5 kab/kota
+- Sulawesi Utara (71): ~15 kab/kota
+- Sulawesi Tengah (72): ~13 kab/kota
+- **Sulawesi Selatan (73)**: ~24 kab/kota (includes code "71" = Kota Makassar)
+- Sulawesi Tenggara (74): ~17 kab/kota
+- Gorontalo (75): ~6 kab/kota
+- Sulawesi Barat (76): ~6 kab/kota
+- Maluku (81): ~11 kab/kota
+- Maluku Utara (82): ~10 kab/kota
+- Papua Barat (91): ~13 kab/kota
+- Papua (94): ~29 kab/kota
+- DI Yogyakarta (34): ~5 kab/kota
 
----
+Total: ~500 entries using official BPS codes.
 
-### New Files to Create
+**2. `src/components/players/NIKInput.tsx`** — Minor update to display format:
+- Show "Kabupaten/Kota" label when city name is resolved
+- Keep fallback "Kode XX.YY" when not found
 
-#### 1. `src/pages/EPlayerCards.tsx` - Dashboard Page
-- Fetches all approved players with their club data from the database
-- Search/filter bar (by name, club, position)
-- Responsive grid layout on desktop, swipeable carousel on mobile
-- Uses Embla Carousel (already installed) for swipe animation between cards
+**3. `src/lib/nik-validator.ts`** — No logic changes needed; it already calls `getCityName()` and falls back gracefully.
 
-#### 2. `src/components/players/EPlayerCard.tsx` - Individual Card Component
-
-**Glass Card Design:**
-- `backdrop-blur-xl bg-white/10 border border-white/20` glass-morphism effect
-- Neon border glow based on registration status:
-  - Green neon glow = VERIFIED (registration_status = 'approved')
-  - Yellow/amber neon glow = PENDING
-  - Red neon glow = REJECTED
-- Rounded corners with shadow and animation on hover
-
-**Card Layout:**
-
-```text
-+----------------------------------+
-|  [STATUS TAG]        [QR CODE]   |
-|                                  |
-|       ( Player Photo )           |
-|       (  Circular   )            |
-|                                  |
-|     PLAYER FULL NAME             |
-|     Club Name                    |
-|                                  |
-|  Position  |  U-XX  |  Flag      |
-|                                  |
-|  Province Origin                 |
-|  PID-XXXXXXXX                    |
-+----------------------------------+
-```
-
-**Top Section**: Status badge (VERIFIED/PENDING/REJECTED) + dynamic QR code
-**Middle Section**: Circular player photo with fallback avatar, full name, club name
-**Bottom Section**: Position badge, age category (calculated from DOB: U12/U15/U17/U20/Senior), nationality flag emoji, province, player ID
-
-#### 3. `src/components/players/PlayerQRCode.tsx` - QR Code Component
-- Generate QR code dynamically using canvas-based rendering (no extra dependency needed -- use a lightweight inline SVG QR generator or a small utility)
-- QR data: URL to player's public profile (`/public/players/{id}`)
-- Small size (64x64px) displayed in card corner
-
----
-
-### Card Data Mapping
-
-| Card Field | Database Source |
-|---|---|
-| Player Photo | `players.photo_url` |
-| Full Name | `players.full_name` |
-| Club Name | `clubs.name` (via `current_club_id`) |
-| Age Category | Calculated from `players.date_of_birth` (U12/U15/U17/U20/Senior) |
-| Player ID | `PID-{players.id.substring(0,8).toUpperCase()}` |
-| Province | `players.nik_province` |
-| Position | `players.position` (GK/DF/MF/FW) |
-| Nationality Flag | Derived from `players.nationality` |
-| Status | `players.registration_status` |
-
----
-
-### Swipe Animation
-
-- Use existing `embla-carousel-react` for mobile swipe
-- Desktop: grid layout (3-4 cards per row) with hover scale animation
-- Mobile: horizontal carousel with snap-to-card behavior
-- Cards animate with `animate-fade-in` and `hover-scale` (existing utilities)
-
----
-
-### Styling Details
-
-**Neon Border CSS (added to index.css):**
-```css
-.neon-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5), inset 0 0 15px rgba(34, 197, 94, 0.1); border-color: rgb(34, 197, 94); }
-.neon-yellow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5), inset 0 0 15px rgba(234, 179, 8, 0.1); border-color: rgb(234, 179, 8); }
-.neon-red { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.1); border-color: rgb(239, 68, 68); }
-```
-
-**Glass background:** Dark gradient background on the page to make glass cards stand out.
-
----
-
-### Files Modified
-
-1. **`src/App.tsx`** - Add route `/e-player-cards`
-2. **`src/components/AppSidebar.tsx`** - Add sidebar menu item
-3. **`src/index.css`** - Add neon glow CSS classes
-
-### Files Created
-
-1. **`src/pages/EPlayerCards.tsx`** - Dashboard page
-2. **`src/components/players/EPlayerCard.tsx`** - Glass card component
-3. **`src/components/players/PlayerQRCode.tsx`** - QR code generator utility
-
-### No Database Changes Required
-All data fields already exist in the `players` table.
+### Result
+The NIK "7371031306690007" will display:
+- **Lokasi:** Sulawesi Selatan, Kota Makassar
+- **Tanggal Lahir:** 13 Juni 1969
+- **Jenis Kelamin:** Laki-laki
 
